@@ -94,6 +94,8 @@ api.interceptors.request.use(
         config.headers["x-telegram-init-data"] = webApp.initData;
       }
 
+      // credentials: true frontendda allaqachon axios instance-da bor
+      
       // DEBUG uchun: Qaysi URL-ga zapros ketayotganini ko'rish (Keyinchalik o'chirib tashlash mumkin)
       console.log(`Sending request to: ${config.baseURL}${config.url}`);
 

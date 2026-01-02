@@ -40,7 +40,7 @@ export function ProductCard({ product, onSelect, selectedCount }: ProductCardPro
         <div className="flex justify-between items-end mt-2">
           <div>
             <p className="text-primary font-bold text-base">
-              {product.price.toLocaleString()} so&apos;m
+              {(product.price || 0).toLocaleString()} so&apos;m
             </p>
             <p className="text-[10px] text-zinc-400">
               Qoldiq: {product.stock} ta

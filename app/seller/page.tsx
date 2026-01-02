@@ -32,9 +32,9 @@ export default function SellerPage() {
   const { user } = useAuthStore();
   const { ToastComponent, showToast } = useToast();
   
-  const { data: products = [], isLoading: productsLoading, refetch: refetchProducts } = useSellerProducts();
-  const { data: sales = [], isLoading: salesLoading, refetch: refetchSales } = useSellerSales();
-  const { data: reports, isLoading: reportsLoading, refetch: refetchReports } = useSellerReports();
+  const { data: products = [], isLoading: productsLoading, refetch: refetchProducts, error: productsError } = useSellerProducts();
+  const { data: sales = [], isLoading: salesLoading, refetch: refetchSales, error: salesError } = useSellerSales();
+  const { data: reports, isLoading: reportsLoading, refetch: refetchReports, error: reportsError } = useSellerReports();
   const { mutateAsync: createSale } = useCreateSale();
   
   const [activeTab, setActiveTab] = useState("products");
@@ -125,6 +125,23 @@ export default function SellerPage() {
     );
   }
 
+  const isUnauthorized = 
+    (productsError as any)?.response?.status === 401 || 
+    (salesError as any)?.response?.status === 401 || 
+    (reportsError as any)?.response?.status === 401;
+
+  if (isUnauthorized) {
+    return (
+      <div className="min-h-screen bg-[#1c1c1c] text-white flex flex-col items-center justify-center p-4 text-center">
+        <h2 className="text-2xl font-bold text-red-500 mb-2">Ruxsat yo'q</h2>
+        <p className="text-zinc-400 mb-6">Sizda ushbu sahifani ko'rish uchun ruxsat yo'q yoki sessiya muddati tugagan.</p>
+        <Button onClick={() => router.push("/")} className="bg-primary">
+          Bosh sahifaga qaytish
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#1c1c1c] text-white pb-32">
       <ToastComponent />
@@ -195,13 +212,13 @@ export default function SellerPage() {
                               {sale.product?.name}
                             </h3>
                             <p className="text-[10px] text-zinc-400 mt-1">
-                              {sale.quantity} ta x {sale.price.toLocaleString()} so&apos;m
+                              {sale.quantity} ta x {(sale.price || 0).toLocaleString()} so&apos;m
                             </p>
                           </div>
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-bold text-primary">
-                            {sale.totalPrice.toLocaleString()}
+                            {(sale.totalPrice || 0).toLocaleString()}
                           </p>
                           <span className="text-[9px] text-zinc-500">
                             {new Date(sale.createdAt).toLocaleTimeString("uz-UZ", { hour: '2-digit', minute: '2-digit' })}
@@ -224,7 +241,7 @@ export default function SellerPage() {
                   </CardHeader>
                   <CardContent className="p-4 pt-0">
                     <p className="text-2xl font-bold text-primary">
-                      {reports.summary.totalRevenue.toLocaleString()} so&apos;m
+                      {(reports?.summary?.totalRevenue || 0).toLocaleString()} so&apos;m
                     </p>
                   </CardContent>
                 </Card>
@@ -263,7 +280,7 @@ export default function SellerPage() {
                 </div>
                 <div>
                   <p className="text-xs text-zinc-400">Savatda {cartItemsCount} ta mahsulot</p>
-                  <p className="text-lg font-bold">{cartTotal.toLocaleString()} so&apos;m</p>
+                  <p className="text-lg font-bold">{(cartTotal || 0).toLocaleString()} so&apos;m</p>
                 </div>
               </div>
               <Button 

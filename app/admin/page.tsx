@@ -136,7 +136,7 @@ export default function AdminPage() {
                     <TrendingUp className="h-4 w-4 text-primary" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{analytics.summary.totalInventoryValue.toLocaleString()} so&apos;m</div>
+                    <div className="text-2xl font-bold">{(analytics?.summary?.totalInventoryValue || 0).toLocaleString()} so&apos;m</div>
                     <p className="text-xs text-muted-foreground mt-1">Ombor + Sotuvchilardagi</p>
                   </CardContent>
                 </Card>
@@ -146,7 +146,7 @@ export default function AdminPage() {
                     <Package className="h-4 w-4 text-green-500" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-green-600">{analytics.summary.warehouseStockValue.toLocaleString()} so&apos;m</div>
+                    <div className="text-2xl font-bold text-green-600">{(analytics?.summary?.warehouseStockValue || 0).toLocaleString()} so&apos;m</div>
                     <p className="text-xs text-muted-foreground mt-1">Tarqatilmagan tovarlar</p>
                   </CardContent>
                 </Card>
@@ -156,7 +156,7 @@ export default function AdminPage() {
                     <Users className="h-4 w-4 text-blue-500" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-blue-600">{analytics.summary.sellerStockValue.toLocaleString()} so&apos;m</div>
+                    <div className="text-2xl font-bold text-blue-600">{(analytics?.summary?.sellerStockValue || 0).toLocaleString()} so&apos;m</div>
                     <p className="text-xs text-muted-foreground mt-1">Sotilmagan tovarlar</p>
                   </CardContent>
                 </Card>
@@ -186,7 +186,7 @@ export default function AdminPage() {
                       </CardHeader>
                       <CardContent className="p-4 pt-0">
                         <p className="text-2xl font-bold text-green-600">
-                          {reports.summary.totalRevenue.toLocaleString()} so&apos;m
+                          {(reports?.summary?.totalRevenue || 0).toLocaleString()} so&apos;m
                         </p>
                       </CardContent>
                     </Card>
@@ -226,7 +226,7 @@ export default function AdminPage() {
                         <XAxis dataKey="name" />
                         <YAxis tickFormatter={(val) => `${(val / 1000000).toFixed(1)}M`} />
                         <RechartsTooltip 
-                          formatter={(value: number) => [`${value.toLocaleString()} so'm`, "Qiymat"]}
+                          formatter={(value: number) => [`${(value || 0).toLocaleString()} so'm`, "Qiymat"]}
                         />
                         <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                       </BarChart>
@@ -256,7 +256,7 @@ export default function AdminPage() {
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>
-                        <RechartsTooltip formatter={(value: number) => `${value.toLocaleString()} so'm`} />
+                        <RechartsTooltip formatter={(value: number) => `${(value || 0).toLocaleString()} so'm`} />
                         <Legend />
                       </PieChart>
                     </ResponsiveContainer>
@@ -283,7 +283,7 @@ export default function AdminPage() {
                         <div className="space-y-4">
                           <div className="flex justify-between items-center">
                             <span className="text-muted-foreground text-sm">Mavjud tovarlar:</span>
-                            <span className="font-bold">{seller.totalValue.toLocaleString()} so&apos;m</span>
+                            <span className="font-bold">{(seller?.totalValue || 0).toLocaleString()} so&apos;m</span>
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-muted-foreground text-sm">Mahsulotlar soni:</span>
