@@ -1,0 +1,151 @@
+"use client";
+
+import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Edit } from "lucide-react";
+import { useState } from "react";
+import { useUpdateProduct, useCategories } from "@/hooks/useProducts";
+import { useToast } from "@/hooks/useToast";
+import { Product } from "@/interface/products.type";
+import { Category } from "@/interface/category.type";
+import { AxiosError } from "axios";
+
+interface EditProductDialogProps {
+  product: Product;
+}
+
+interface ProductFormValues {
+  name: string;
+  description: string;
+  price: number;
+  costPrice: number;
+  category: string;
+  stock: number;
+  sku: string;
+  color: string;
+}
+
+export function EditProductDialog({ product }: EditProductDialogProps) {
+  const [open, setOpen] = useState(false);
+  const { register, handleSubmit } = useForm<ProductFormValues>({
+    defaultValues: {
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      costPrice: product.costPrice,
+      category: product.category,
+      stock: product.stock,
+      sku: product.sku,
+      color: product.color,
+    }
+  });
+  
+  const { mutate: updateProduct, isPending } = useUpdateProduct();
+  const { data: categories = [] } = useCategories();
+  const { showToast } = useToast();
+
+  const onSubmit = (data: ProductFormValues) => {
+    updateProduct({ id: product._id, data }, {
+      onSuccess: () => {
+        showToast("Mahsulot muvaffaqiyatli tahrirlandi", "success");
+        setOpen(false);
+      },
+      onError: (error: unknown) => {
+        const axiosError = error as AxiosError<{ error: string }>;
+        showToast(axiosError.response?.data?.error || "Xatolik yuz berdi", "error");
+      }
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="icon">
+          <Edit className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <DialogHeader>
+            <DialogTitle>Mahsulotni tahrirlash</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="edit-name">Nomi</Label>
+              <Input id="edit-name" {...register("name", { required: true })} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-description">Tavsif</Label>
+              <Input id="edit-description" {...register("description")} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="edit-costPrice">Tan narxi</Label>
+                <Input
+                  id="edit-costPrice"
+                  type="number"
+                  {...register("costPrice", { required: true, valueAsNumber: true })}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-price">Sotuv narxi</Label>
+                <Input
+                  id="edit-price"
+                  type="number"
+                  {...register("price", { required: true, valueAsNumber: true })}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="edit-sku">SKU / Maxsus nom</Label>
+                <Input id="edit-sku" {...register("sku")} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-color">Rang</Label>
+                <Input id="edit-color" {...register("color")} />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-category">Kategoriya</Label>
+              <select 
+                id="edit-category" 
+                {...register("category", { required: true })}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="">Tanlang...</option>
+                {categories.map((cat: Category) => (
+                  <option key={cat._id} value={cat.name}>{cat.name}</option>
+                ))}
+                {categories.length === 0 && <option value="general">Umumiy</option>}
+              </select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-stock">Ombordagi miqdor</Label>
+              <Input
+                id="edit-stock"
+                type="number"
+                {...register("stock", { required: true, valueAsNumber: true })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? "Saqlanmoqda..." : "Saqlash"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
