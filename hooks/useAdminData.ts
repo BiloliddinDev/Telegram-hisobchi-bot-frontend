@@ -76,3 +76,14 @@ export const useAssignProduct = () => {
     },
   });
 };
+
+export const useExportExcel = () => {
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.get("/admin/export-excel", {
+        responseType: "blob",
+      });
+      return response.data;
+    },
+  });
+};

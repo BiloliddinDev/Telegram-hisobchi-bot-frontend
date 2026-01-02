@@ -13,7 +13,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/useToast";
 import { useProducts } from "@/hooks/useProducts";
-import { useSellers, useReports } from "@/hooks/useAdminData";
+import { useSellers, useReports, useExportExcel } from "@/hooks/useAdminData";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { SellerCard } from "@/components/SellerCard";
 import { CreateProductDialog } from "@/components/admin/CreateProductDialog";
@@ -22,8 +22,9 @@ import { CreateSellerDialog } from "@/components/admin/CreateSellerDialog";
 import { StockTransferModule } from "@/components/admin/StockTransferModule";
 import { TransferHistoryTable } from "@/components/admin/TransferHistoryTable";
 import { ProductTable } from "@/components/admin/ProductTable";
+import { Button } from "@/components/ui/button";
 import { Seller, SellerAnalytics } from "@/interface/seller.type";
-import { TrendingUp, Users, Package } from "lucide-react";
+import { TrendingUp, Users, Package, Download } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
@@ -31,7 +32,7 @@ const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
 export default function AdminPage() {
   const router = useRouter();
   const { user } = useAuthStore();
-  const { ToastComponent } = useToast();
+  const { ToastComponent, showToast } = useToast();
   
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: sellers = [], isLoading: sellersLoading } = useSellers();
@@ -39,6 +40,27 @@ export default function AdminPage() {
   const { data: analytics, isLoading: analyticsLoading } = useAnalytics();
   
   const [activeTab, setActiveTab] = useState("products");
+  const { mutate: exportExcel, isPending: isExporting } = useExportExcel();
+
+  const handleExportExcel = () => {
+    exportExcel(undefined, {
+      onSuccess: (blob) => {
+        const url = window.URL.createObjectURL(new Blob([blob]));
+        const link = document.createElement("a");
+        link.href = url;
+        const date = new Date().toISOString().split("T")[0];
+        link.setAttribute("download", `Hisobot_${date}.xlsx`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        showToast("Excel hisobot muvaffaqiyatli yuklandi", "success");
+      },
+      onError: () => {
+        showToast("Excel yuklashda xatolik yuz berdi", "error");
+      }
+    });
+  };
 
   useEffect(() => {
     if (user && user.role !== "admin") {
@@ -127,6 +149,31 @@ export default function AdminPage() {
           </TabsContent>
 
           <TabsContent value="reports" className="mt-4 space-y-8">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <h2 className="text-2xl font-bold">Hisobotlar va Analitika</h2>
+                <p className="text-muted-foreground text-sm">Tizimdagi barcha harakatlar va qoldiqlar statistikasi</p>
+              </div>
+              <Button 
+                onClick={handleExportExcel} 
+                disabled={isExporting}
+                variant="default"
+                className="w-full md:w-auto gap-2"
+              >
+                {isExporting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Tayyorlanmoqda...
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-4 w-4" />
+                    📥 Excel yuklash
+                  </>
+                )}
+              </Button>
+            </div>
+
             {/* Global Inventory Summary */}
             {analytics && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
