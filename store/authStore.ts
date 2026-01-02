@@ -31,6 +31,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ loading: true, error: null });
     try {
       const telegramId = getTelegramUserId();
+      // const  telegramId = 1261889753
       console.log("Fetching user with Telegram ID:", telegramId);
 
       if (!telegramId) {
