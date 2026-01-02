@@ -24,11 +24,16 @@ declare global {
   }
 }
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (typeof window !== "undefined"
-    ? window.location.origin + "/api"
-    : "http://localhost:5000/api");
+
+const getBaseURL = () => {
+  const envURL = process.env.NEXT_PUBLIC_API_URL;
+  if (envURL) {
+    return envURL.endsWith('/') ? `${envURL}api` : `${envURL}/api`;
+  }
+  return "http://localhost:5000/api";
+};
+
+const API_URL = getBaseURL();
 
 export const waitForTelegram = (): Promise<TelegramWebApp | null> => {
   return new Promise((resolve) => {
@@ -36,22 +41,16 @@ export const waitForTelegram = (): Promise<TelegramWebApp | null> => {
       resolve(null);
       return;
     }
-
-    // Check if already loaded
     if (window.Telegram?.WebApp) {
       resolve(window.Telegram.WebApp);
       return;
     }
-
-    // Wait for script to load
     const checkTelegram = setInterval(() => {
       if (window.Telegram?.WebApp) {
         clearInterval(checkTelegram);
         resolve(window.Telegram.WebApp);
       }
     }, 100);
-
-    // Timeout after 3 seconds
     setTimeout(() => {
       clearInterval(checkTelegram);
       resolve(null);
@@ -59,7 +58,6 @@ export const waitForTelegram = (): Promise<TelegramWebApp | null> => {
   });
 };
 
-// Get Telegram WebApp data
 export const getTelegramData = (): TelegramWebApp | null => {
   if (typeof window !== "undefined" && window.Telegram?.WebApp) {
     return window.Telegram.WebApp;
@@ -67,73 +65,55 @@ export const getTelegramData = (): TelegramWebApp | null => {
   return null;
 };
 
-// Get Telegram user ID
 export const getTelegramUserId = (): string | null => {
   const webApp = getTelegramData();
-  if (webApp?.initDataUnsafe?.user?.id) {
-    return webApp.initDataUnsafe.user.id.toString();
-  }
-
-  // Fallback: try to get from initData
-  if (webApp?.initData) {
-    try {
-      const params = new URLSearchParams(webApp.initData);
-      const userStr = params.get("user");
-      if (userStr) {
-        const user = JSON.parse(decodeURIComponent(userStr));
-        return user.id?.toString() || null;
-      }
-    } catch (e) {
-      console.error("Error parsing initData:", e);
-    }
-  }
-
-  return null;
+  return webApp?.initDataUnsafe?.user?.id?.toString() || null;
 };
 
-// Create axios instance with default config
+// Axios instance yaratish
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
   },
+  // Bu muhim: Agar backend-da cookie ishlatilsa ruxsat beradi
+  withCredentials: true
 });
 
-// Add request interceptor to include Telegram ID and Init Data
+// Zapros yuborishdan oldin Telegram ID va InitData-ni headerga qo'shish
 api.interceptors.request.use(
-  (config) => {
-    const webApp = getTelegramData();
-    const telegramId = getTelegramUserId();
-    
-    if (telegramId) {
-      config.headers["x-telegram-id"] = telegramId;
-    }
+    (config) => {
+      const webApp = getTelegramData();
+      const telegramId = getTelegramUserId();
 
-    if (webApp?.initData) {
-      config.headers["x-telegram-init-data"] = webApp.initData;
-    }
+      if (telegramId) {
+        config.headers["x-telegram-id"] = telegramId;
+      }
 
-    return config;
-  },
-  (error: unknown) => {
-    return Promise.reject(error);
-  }
+      if (webApp?.initData) {
+        config.headers["x-telegram-init-data"] = webApp.initData;
+      }
+
+      // DEBUG uchun: Qaysi URL-ga zapros ketayotganini ko'rish (Keyinchalik o'chirib tashlash mumkin)
+      console.log(`Sending request to: ${config.baseURL}${config.url}`);
+
+      return config;
+    },
+    (error) => Promise.reject(error)
 );
 
-// Add response interceptor for error handling
+// Kelgan javobni tekshirish va xatolarni ushlash
 api.interceptors.response.use(
-  (response) => response,
-  (error: unknown) => {
-    const axiosError = error as AxiosError;
-    if (axiosError.response?.status === 401) {
-      // Handle unauthorized access
-      console.error("Unauthorized access");
-    } else if (axiosError.response?.status === 403) {
-      // Handle forbidden access
-      console.error("Forbidden access");
+    (response) => response,
+    (error: AxiosError) => {
+      if (error.response?.status === 404) {
+        console.error("❌ XATO 404: API manzili topilmadi. Hozirgi baseURL:", API_URL);
+      }
+      if (error.response?.status === 401) {
+        console.error("❌ XATO 401: Avtorizatsiya xatosi.");
+      }
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
-  }
 );
 
 export default api;
