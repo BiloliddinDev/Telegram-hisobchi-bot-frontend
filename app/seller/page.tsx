@@ -126,9 +126,9 @@ export default function SellerPage() {
   }
 
   const isUnauthorized = 
-    (productsError as any)?.response?.status === 401 || 
-    (salesError as any)?.response?.status === 401 || 
-    (reportsError as any)?.response?.status === 401;
+    (axios.isAxiosError(productsError) && productsError.response?.status === 401) || 
+    (axios.isAxiosError(salesError) && salesError.response?.status === 401) || 
+    (axios.isAxiosError(reportsError) && reportsError.response?.status === 401);
 
   if (isUnauthorized) {
     return (

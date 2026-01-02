@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import api, { getTelegramUserId } from "@/lib/api";
-import { AxiosError } from "axios";
+import axios from "axios";
 
 interface User {
   _id: string;
@@ -44,12 +44,16 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ user: response.data.user, loading: false });
     } catch (error: unknown) {
       console.error("Error fetching user:", error);
-      const axiosError = error as AxiosError;
+      let errorMessage = "Foydalanuvchi ma'lumotlarini yuklashda xatolik";
+      
+      if (axios.isAxiosError(error)) {
+        errorMessage = (error.response?.data as { error?: string })?.error || error.message;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
       set({
-        error:
-          (axiosError.response?.data as { error?: string })?.error ||
-          axiosError.message ||
-          "Foydalanuvchi ma'lumotlarini yuklashda xatolik",
+        error: errorMessage,
         loading: false,
       });
     }

@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/useToast";
 import { Seller } from "@/interface/seller.type";
 import { Product } from "@/interface/products.type";
 import { Search, Plus, Minus, Trash2, CheckCircle2, ChevronRight, ChevronLeft, User as UserIcon } from "lucide-react";
-import { AxiosError } from "axios";
+import axios from "axios";
 
 export function StockTransferModule() {
   const [step, setStep] = useState(1);
@@ -75,8 +75,13 @@ export function StockTransferModule() {
         setBasket([]);
       },
       onError: (error: unknown) => {
-        const axiosError = error as AxiosError<{ error: string }>;
-        showToast(axiosError.response?.data?.error || "Xatolik yuz berdi", "error");
+        let errorMessage = "Xatolik yuz berdi";
+        if (axios.isAxiosError<{ error: string }>(error)) {
+          errorMessage = error.response?.data?.error || error.message;
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+        showToast(errorMessage, "error");
       }
     });
   };

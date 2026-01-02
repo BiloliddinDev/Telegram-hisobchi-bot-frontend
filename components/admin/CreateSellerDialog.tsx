@@ -16,7 +16,7 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useCreateSeller } from "@/hooks/useAdminData";
 import { useToast } from "@/hooks/useToast";
-import { AxiosError } from "axios";
+import axios from "axios";
 
 interface SellerFormValues {
   phoneNumber: string;
@@ -38,8 +38,13 @@ export function CreateSellerDialog() {
         reset();
       },
       onError: (error: unknown) => {
-        const axiosError = error as AxiosError<{ error: string }>;
-        showToast(axiosError.response?.data?.error || "Xatolik yuz berdi", "error");
+        let errorMessage = "Xatolik yuz berdi";
+        if (axios.isAxiosError<{ error: string }>(error)) {
+          errorMessage = error.response?.data?.error || error.message;
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+        showToast(errorMessage, "error");
       }
     });
   };

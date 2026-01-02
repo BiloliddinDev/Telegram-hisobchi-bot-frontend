@@ -8,7 +8,7 @@ import { Edit, RotateCcw, Check, X } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/useToast";
-import { AxiosError } from "axios";
+import axios from "axios";
 
 export function TransferHistoryTable() {
   const { data, isLoading } = useTransfers();
@@ -35,8 +35,13 @@ export function TransferHistoryTable() {
         setEditingId(null);
       },
       onError: (err: unknown) => {
-        const axiosError = err as AxiosError<{ error: string }>;
-        showToast(axiosError.response?.data?.error || "Xatolik", "error");
+        let errorMessage = "Xatolik";
+        if (axios.isAxiosError<{ error: string }>(err)) {
+          errorMessage = err.response?.data?.error || err.message;
+        } else if (err instanceof Error) {
+          errorMessage = err.message;
+        }
+        showToast(errorMessage, "error");
       }
     });
   };
@@ -48,8 +53,13 @@ export function TransferHistoryTable() {
           showToast("Mahsulot qaytarildi", "success");
         },
         onError: (err: unknown) => {
-          const axiosError = err as AxiosError<{ error: string }>;
-          showToast(axiosError.response?.data?.error || "Xatolik", "error");
+          let errorMessage = "Xatolik";
+          if (axios.isAxiosError<{ error: string }>(err)) {
+            errorMessage = err.response?.data?.error || err.message;
+          } else if (err instanceof Error) {
+            errorMessage = err.message;
+          }
+          showToast(errorMessage, "error");
         }
       });
     }

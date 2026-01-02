@@ -17,7 +17,7 @@ import { useState } from "react";
 import { useCreateProduct, useCategories } from "@/hooks/useProducts";
 import { useToast } from "@/hooks/useToast";
 import { Category } from "@/interface/category.type";
-import { AxiosError } from "axios";
+import axios from "axios";
 
 interface ProductFormValues {
   name: string;
@@ -45,8 +45,13 @@ export function CreateProductDialog() {
         reset();
       },
       onError: (error: unknown) => {
-        const axiosError = error as AxiosError<{ error: string }>;
-        showToast(axiosError.response?.data?.error || "Xatolik yuz berdi", "error");
+        let errorMessage = "Xatolik yuz berdi";
+        if (axios.isAxiosError<{ error: string }>(error)) {
+          errorMessage = error.response?.data?.error || error.message;
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+        showToast(errorMessage, "error");
       }
     });
   };

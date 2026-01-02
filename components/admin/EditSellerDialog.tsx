@@ -18,7 +18,7 @@ import { useState } from "react";
 import { useUpdateSeller } from "@/hooks/useAdminData";
 import { useToast } from "@/hooks/useToast";
 import { Seller } from "@/interface/seller.type";
-import { AxiosError } from "axios";
+import axios from "axios";
 
 interface EditSellerDialogProps {
   seller: Seller;
@@ -55,8 +55,13 @@ export function EditSellerDialog({ seller }: EditSellerDialogProps) {
           setOpen(false);
         },
         onError: (error: unknown) => {
-          const axiosError = error as AxiosError<{ error: string }>;
-          showToast(axiosError.response?.data?.error || "Xatolik yuz berdi", "error");
+          let errorMessage = "Xatolik yuz berdi";
+          if (axios.isAxiosError<{ error: string }>(error)) {
+            errorMessage = error.response?.data?.error || error.message;
+          } else if (error instanceof Error) {
+            errorMessage = error.message;
+          }
+          showToast(errorMessage, "error");
         },
       }
     );
