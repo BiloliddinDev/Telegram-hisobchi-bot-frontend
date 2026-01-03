@@ -30,12 +30,12 @@ interface TelegramWebApp {
     onClick: (callback: () => void) => void;
     offClick: (callback: () => void) => void;
     setText: (text: string) => void;
-    setParams: (params: { 
-      text?: string; 
-      color?: string; 
-      text_color?: string; 
-      is_active?: boolean; 
-      is_visible?: boolean 
+    setParams: (params: {
+      text?: string;
+      color?: string;
+      text_color?: string;
+      is_active?: boolean;
+      is_visible?: boolean;
     }) => void;
   };
 }
@@ -48,13 +48,26 @@ declare global {
   }
 }
 
-
 const getBaseURL = () => {
   const envURL = process.env.NEXT_PUBLIC_API_URL;
+
   if (envURL) {
-    return envURL.endsWith('/') ? `${envURL}api` : `${envURL}/api`;
+    // If environment URL is set, use it
+    if (envURL.startsWith("/")) {
+      // Relative path (e.g., "/api" for same-domain deployment)
+      return envURL;
+    } else {
+      // Full URL (e.g., "http://localhost:5000" or "https://domain.com")
+      return envURL.endsWith("/") ? `${envURL}api` : `${envURL}/api`;
+    }
   }
-  return "http://localhost:5000/api";
+
+  // Fallback based on environment
+  if (process.env.NODE_ENV === "production") {
+    return "/api"; // Relative path for production
+  } else {
+    return "http://localhost:5000/api"; // Local development
+  }
 };
 
 const API_URL = getBaseURL();
@@ -91,6 +104,9 @@ export const getTelegramData = (): TelegramWebApp | null => {
 
 export const getTelegramUserId = (): string | null => {
   const webApp = getTelegramData();
+  if (process.env.NODE_ENV === "development" && process.env.ADMIN_ID) {
+    return process.env.ADMIN_ID;
+  }
   return webApp?.initDataUnsafe?.user?.id?.toString() || null;
 };
 
@@ -101,45 +117,80 @@ const api = axios.create({
     "Content-Type": "application/json",
   },
   // Bu muhim: Agar backend-da cookie ishlatilsa ruxsat beradi
-  withCredentials: true
+  withCredentials: true,
 });
 
 // Zapros yuborishdan oldin Telegram ID va InitData-ni headerga qo'shish
 api.interceptors.request.use(
-    (config) => {
-      const webApp = getTelegramData();
-      const telegramId = getTelegramUserId();
+  (config) => {
+    const webApp = getTelegramData();
+    const telegramId = getTelegramUserId();
 
+    if (telegramId) {
+      config.headers["x-telegram-id"] = telegramId;
+    }
+
+    if (webApp?.initData) {
+      config.headers["x-telegram-init-data"] = webApp.initData;
+    }
+
+    // credentials: true frontendda allaqachon axios instance-da bor
+
+    // Debug logging (only in development or when debug is enabled)
+    if (
+      process.env.NODE_ENV === "development" ||
+      process.env.NEXT_PUBLIC_DEBUG === "true"
+    ) {
+      console.log(
+        `🌐 API Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`,
+      );
       if (telegramId) {
-        config.headers["x-telegram-id"] = telegramId;
+        console.log(`👤 Telegram ID: ${telegramId}`);
       }
+    }
 
-      if (webApp?.initData) {
-        config.headers["x-telegram-init-data"] = webApp.initData;
-      }
-
-      // credentials: true frontendda allaqachon axios instance-da bor
-      
-      // DEBUG uchun: Qaysi URL-ga zapros ketayotganini ko'rish (Keyinchalik o'chirib tashlash mumkin)
-      console.log(`Sending request to: ${config.baseURL}${config.url}`);
-
-      return config;
-    },
-    (error) => Promise.reject(error)
+    return config;
+  },
+  (error) => Promise.reject(error),
 );
 
 // Kelgan javobni tekshirish va xatolarni ushlash
 api.interceptors.response.use(
-    (response) => response,
-    (error: AxiosError) => {
-      if (error.response?.status === 404) {
-        console.error("❌ XATO 404: API manzili topilmadi. Hozirgi baseURL:", API_URL);
+  (response) => response,
+  (error: AxiosError) => {
+    // Enhanced error logging with environment awareness
+    const isDev =
+      process.env.NODE_ENV === "development" ||
+      process.env.NEXT_PUBLIC_DEBUG === "true";
+
+    if (error.response?.status === 404) {
+      console.error(
+        "❌ XATO 404: API manzili topilmadi.",
+        isDev ? `Hozirgi baseURL: ${API_URL}` : "",
+      );
+      if (isDev) {
+        console.error("🔧 Tekshiring: Backend server ishlaydimi?");
+        console.error("🔧 Environment:", process.env.NODE_ENV);
       }
-      if (error.response?.status === 401) {
-        console.error("❌ XATO 401: Avtorizatsiya xatosi.");
-      }
-      return Promise.reject(error);
     }
+    if (error.response?.status === 401) {
+      console.error("❌ XATO 401: Avtorizatsiya xatosi.");
+      if (isDev) {
+        console.error("🔧 Telegram initData tekshiring");
+      }
+    }
+    if (error.response?.status === 500) {
+      console.error("❌ XATO 500: Server xatosi.");
+    }
+    if (error.code === "NETWORK_ERROR" || error.code === "ERR_NETWORK") {
+      console.error("❌ Tarmoq xatosi: Backend serverga ulanib bo'lmadi.");
+      if (isDev) {
+        console.error(`🔧 Backend URL tekshiring: ${API_URL}`);
+      }
+    }
+
+    return Promise.reject(error);
+  },
 );
 
 export default api;

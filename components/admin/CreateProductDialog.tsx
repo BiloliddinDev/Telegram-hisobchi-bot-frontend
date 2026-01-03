@@ -17,6 +17,7 @@ import { useState } from "react";
 import { useCreateProduct, useCategories } from "@/hooks/useProducts";
 import { useToast } from "@/hooks/useToast";
 import { Category } from "@/interface/category.type";
+import { ProductCreateInput } from "@/interface/products.type";
 import axios from "axios";
 
 interface ProductFormValues {
@@ -38,7 +39,19 @@ export function CreateProductDialog() {
   const { showToast } = useToast();
 
   const onSubmit = (data: ProductFormValues) => {
-    createProduct(data, {
+    // Map form values to ProductCreateInput
+    const productData: ProductCreateInput = {
+      name: data.name,
+      description: data.description,
+      price: data.price,
+      costPrice: data.costPrice,
+      category: data.category, // This is already a string (category ID)
+      stock: data.stock,
+      sku: data.sku,
+      color: data.color,
+    };
+
+    createProduct(productData, {
       onSuccess: () => {
         showToast("Mahsulot muvaffaqiyatli qo'shildi", "success");
         setOpen(false);
@@ -55,6 +68,7 @@ export function CreateProductDialog() {
       }
     });
   };
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -108,14 +122,14 @@ export function CreateProductDialog() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="category">Kategoriya</Label>
-              <select 
-                id="category" 
+              <select
+                id="category"
                 {...register("category", { required: true })}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="">Tanlang...</option>
                 {categories.map((cat: Category) => (
-                  <option key={cat._id} value={cat.name}>{cat.name}</option>
+                  <option key={cat._id} value={cat._id}>{cat.name}</option>
                 ))}
                 {categories.length === 0 && <option value="general">Umumiy</option>}
               </select>

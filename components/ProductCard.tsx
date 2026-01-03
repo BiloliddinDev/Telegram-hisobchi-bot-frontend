@@ -9,10 +9,10 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onSelect, selectedCount }: ProductCardProps) {
-  const isOutOfStock = product.stock <= 0;
+  const isOutOfStock = product.count <= 0;
 
   return (
-    <Card 
+    <Card
       className={`overflow-hidden cursor-pointer transition-all active:scale-95 ${
         selectedCount ? "ring-2 ring-primary border-primary" : "hover:border-primary/50"
       } bg-white text-zinc-900 border-zinc-200 ${isOutOfStock ? "opacity-60 grayscale-[0.5] cursor-not-allowed active:scale-100" : ""}`}
@@ -52,11 +52,11 @@ export function ProductCard({ product, onSelect, selectedCount }: ProductCardPro
               {(product.price || 0).toLocaleString()} so&apos;m
             </p>
             <p className={`text-[10px] ${isOutOfStock ? "text-red-500 font-bold" : "text-zinc-500"}`}>
-              Qoldiq: {product.stock} ta
+              Qoldiq: {product.count} ta
             </p>
           </div>
           <span className="text-[10px] bg-zinc-100 px-2 py-1 rounded text-zinc-600 border border-zinc-200">
-            {product.category}
+            {product.category.name}
           </span>
         </div>
       </CardContent>

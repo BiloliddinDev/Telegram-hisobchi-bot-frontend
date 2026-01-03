@@ -76,14 +76,14 @@ export default function SellerPage() {
 	}, [user, router]);
 
 	const handleAddToCart = (product: Product) => {
-		if (product.stock <= 0) {
+		if (product.count <= 0) {
 			showToast("Mahsulot qolmagan", "error");
 			return;
 		}
 
 		setCart((prev) => {
 			const currentQty = prev[product?._id]?.quantity || 0;
-			if (currentQty >= product.stock) {
+			if (currentQty >= product.count) {
 				showToast("Ombordagi miqdordan ko'p sotib bo'lmaydi", "error");
 				return prev;
 			}
@@ -109,7 +109,7 @@ export default function SellerPage() {
 				return nextCart;
 			}
 
-			if (newQty > item.product.stock) {
+			if (newQty > item.product.count) {
 				showToast("Ombordagi miqdordan ko'p sotib bo'lmaydi", "error");
 				return prev;
 			}
@@ -217,13 +217,13 @@ export default function SellerPage() {
 	if (isUnauthorized) {
 		return (
 			<div className="min-h-screen bg-[#f4f4f4] text-zinc-900 flex flex-col items-center justify-center p-4 text-center">
-				<h2 className="text-2xl font-bold text-red-500 mb-2">Ruxsat yo'q</h2>
+				<h2 className="text-2xl font-bold text-red-500 mb-2">{`Ruxsat yo'q`}</h2>
 				<p className="text-zinc-500 mb-6">
-					Sizda ushbu sahifani ko'rish uchun ruxsat yo'q yoki sessiya muddati
-					tugagan.
+					{`	Sizda ushbu sahifani ko'rish uchun ruxsat yo'q yoki sessiya muddati
+					tugagan.`}
 				</p>
 				<Button onClick={() => router.push("/")} className="bg-primary">
-					Bosh sahifaga qaytish
+					{`Bosh sahifaga qaytish`}
 				</Button>
 			</div>
 		);

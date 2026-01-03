@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { Product } from "@/interface/products.type";
+import { Product, ProductCreateInput, ProductUpdateInput } from "@/interface/products.type";
 import { Category } from "@/interface/category.type";
 
 export const useProducts = () => {
@@ -16,7 +16,7 @@ export const useProducts = () => {
 export const useCreateProduct = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (productData: Partial<Product>) => {
+    mutationFn: async (productData: ProductCreateInput) => {
       const { data } = await api.post("/products", productData);
       return data;
     },
@@ -29,7 +29,7 @@ export const useCreateProduct = () => {
 export const useUpdateProduct = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<Product> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: ProductUpdateInput }) => {
       const response = await api.put(`/products/${id}`, data);
       return response.data;
     },
