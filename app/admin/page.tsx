@@ -33,12 +33,12 @@ export default function AdminPage() {
   const router = useRouter();
   const { user } = useAuthStore();
   const { ToastComponent, showToast } = useToast();
-  
+
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: sellers = [], isLoading: sellersLoading } = useSellers();
   const { data: reports, isLoading: reportsLoading } = useReports();
   const { data: analytics, isLoading: analyticsLoading } = useAnalytics();
-  
+
   const [activeTab, setActiveTab] = useState("products");
   const { mutate: exportExcel, isPending: isExporting } = useExportExcel();
 
@@ -154,8 +154,8 @@ export default function AdminPage() {
                 <h2 className="text-2xl font-bold">Hisobotlar va Analitika</h2>
                 <p className="text-muted-foreground text-sm">Tizimdagi barcha harakatlar va qoldiqlar statistikasi</p>
               </div>
-              <Button 
-                onClick={handleExportExcel} 
+              <Button
+                onClick={handleExportExcel}
                 disabled={isExporting}
                 variant="default"
                 className="w-full md:w-auto gap-2"
@@ -272,7 +272,7 @@ export default function AdminPage() {
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
                         <XAxis dataKey="name" />
                         <YAxis tickFormatter={(val) => `${(val / 1000000).toFixed(1)}M`} />
-                        <RechartsTooltip 
+                        <RechartsTooltip
                           formatter={(value: number) => [`${(value || 0).toLocaleString()} so'm`, "Qiymat"]}
                         />
                         <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} />

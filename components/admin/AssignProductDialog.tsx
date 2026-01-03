@@ -33,10 +33,10 @@ export function AssignProductDialog({ product }: { product: Product }) {
   const { showToast } = useToast();
 
   const onSubmit = (data: AssignFormValues) => {
-    assignProduct({ 
-      productId: product._id, 
-      sellerId: data.sellerId, 
-      quantity: data.quantity 
+    assignProduct({
+      productId: product._id,
+      sellerId: data.sellerId,
+      quantity: data.quantity
     }, {
       onSuccess: () => {
         showToast("Mahsulot muvaffaqiyatli biriktirildi", "success");
@@ -71,8 +71,8 @@ export function AssignProductDialog({ product }: { product: Product }) {
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="sellerId">Sotuvchi</Label>
-              <select 
-                id="sellerId" 
+              <select
+                id="sellerId"
                 {...register("sellerId", { required: true })}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
@@ -90,10 +90,10 @@ export function AssignProductDialog({ product }: { product: Product }) {
                 id="quantity"
                 type="number"
                 min="1"
-                max={product.stock}
+                max={product.count}
                 {...register("quantity", { required: true, valueAsNumber: true })}
               />
-              <p className="text-xs text-muted-foreground">Max: {product.stock}</p>
+              <p className="text-xs text-muted-foreground">Max: {product.count}</p>
             </div>
           </div>
           <DialogFooter>

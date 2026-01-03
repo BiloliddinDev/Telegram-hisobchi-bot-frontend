@@ -32,18 +32,18 @@ export default function SellerPage() {
   const router = useRouter();
   const { user } = useAuthStore();
   const { ToastComponent, showToast } = useToast();
-  
+
   const { data: products = [], isLoading: productsLoading, refetch: refetchProducts, error: productsError } = useSellerProducts();
   const { data: sales = [], isLoading: salesLoading, refetch: refetchSales, error: salesError } = useSellerSales();
   const { data: reports, isLoading: reportsLoading, refetch: refetchReports, error: reportsError } = useSellerReports();
   const { mutateAsync: createSale } = useCreateSale();
-  
+
   const [activeTab, setActiveTab] = useState("products");
   const [searchTerm, setSearchTerm] = useState("");
   const [cart, setCart] = useState<Record<string, CartItem>>({});
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const filteredProducts = products.filter(p => 
+  const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.sku?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -55,14 +55,14 @@ export default function SellerPage() {
   }, [user, router]);
 
   const handleAddToCart = (product: Product) => {
-    if (product.stock <= 0) {
+    if (product.count <= 0) {
       showToast("Mahsulot qolmagan", "error");
       return;
     }
 
     setCart(prev => {
       const currentQty = prev[product?._id]?.quantity || 0;
-      if (currentQty >= product.stock) {
+      if (currentQty >= product.count) {
         showToast("Ombordagi miqdordan ko'p sotib bo'lmaydi", "error");
         return prev;
       }
@@ -80,19 +80,19 @@ export default function SellerPage() {
     setCart(prev => {
       const item = prev[productId];
       if (!item) return prev;
-      
+
       const newQty = item.quantity + delta;
       if (newQty <= 0) {
         const nextCart = { ...prev };
         delete nextCart[productId];
         return nextCart;
       }
-      
-      if (newQty > item.product.stock) {
+
+      if (newQty > item.product.count) {
         showToast("Ombordagi miqdordan ko'p sotib bo'lmaydi", "error");
         return prev;
       }
-      
+
       return {
         ...prev,
         [productId]: { ...item, quantity: newQty }
@@ -102,12 +102,12 @@ export default function SellerPage() {
 
 
   const cartTotal = useMemo(() => Object.values(cart).reduce(
-    (sum, item) => sum + item.product.price * item.quantity, 
+    (sum, item) => sum + item.product.price * item.quantity,
     0
   ), [cart]);
 
   const cartItemsCount = useMemo(() => Object.values(cart).reduce(
-    (sum, item) => sum + item.quantity, 
+    (sum, item) => sum + item.quantity,
     0
   ), [cart]);
 
@@ -127,7 +127,7 @@ export default function SellerPage() {
           price: item.product.price,
         });
       }
-      
+
       showToast("Sotuv muvaffaqiyatli amalga oshirildi", "success");
       setCart({});
       refetchProducts();
@@ -177,9 +177,9 @@ export default function SellerPage() {
     );
   }
 
-  const isUnauthorized = 
-    (axios.isAxiosError(productsError) && productsError.response?.status === 401) || 
-    (axios.isAxiosError(salesError) && salesError.response?.status === 401) || 
+  const isUnauthorized =
+    (axios.isAxiosError(productsError) && productsError.response?.status === 401) ||
+    (axios.isAxiosError(salesError) && salesError.response?.status === 401) ||
     (axios.isAxiosError(reportsError) && reportsError.response?.status === 401);
 
   if (isUnauthorized) {
@@ -197,7 +197,7 @@ export default function SellerPage() {
   return (
     <div className="min-h-screen bg-[#f4f4f4] text-zinc-900 pb-20">
       <ToastComponent />
-      
+
       <div className="p-4 flex justify-between items-center bg-white border-b border-zinc-200 sticky top-0 z-20 shadow-sm">
         <div>
           <h1 className="text-xl font-bold text-zinc-900">Sotuvchi</h1>
@@ -224,8 +224,8 @@ export default function SellerPage() {
               <div className="lg:col-span-2 space-y-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-                  <Input 
-                    placeholder="Mahsulot qidirish..." 
+                  <Input
+                    placeholder="Mahsulot qidirish..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="bg-white border-zinc-200 text-zinc-900 placeholder:text-zinc-400 h-11 pl-10 rounded-xl shadow-sm focus:ring-primary"
@@ -239,9 +239,9 @@ export default function SellerPage() {
                     </div>
                   ) : (
                     filteredProducts.map((product: Product) => (
-                      <ProductCard 
-                        key={product._id} 
-                        product={product} 
+                      <ProductCard
+                        key={product._id}
+                        product={product}
                         onSelect={handleAddToCart}
                         selectedCount={cart[product._id]?.quantity}
                       />
@@ -260,9 +260,9 @@ export default function SellerPage() {
                         Savat
                       </CardTitle>
                       {cartItemsCount > 0 && (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => setCart({})}
                           className="text-zinc-400 hover:text-red-500 h-8"
                         >
@@ -300,18 +300,18 @@ export default function SellerPage() {
                                 </p>
                               </div>
                               <div className="flex items-center gap-2">
-                                <Button 
-                                  variant="outline" 
-                                  size="icon" 
+                                <Button
+                                  variant="outline"
+                                  size="icon"
                                   className="h-7 w-7 rounded-full border-zinc-200"
                                   onClick={() => updateCartQuantity(item.product._id, -1)}
                                 >
                                   <Minus className="w-3 h-3" />
                                 </Button>
                                 <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
-                                <Button 
-                                  variant="outline" 
-                                  size="icon" 
+                                <Button
+                                  variant="outline"
+                                  size="icon"
                                   className="h-7 w-7 rounded-full border-zinc-200"
                                   onClick={() => updateCartQuantity(item.product._id, 1)}
                                 >
@@ -326,9 +326,9 @@ export default function SellerPage() {
                             <span className="text-zinc-500 text-sm">Jami:</span>
                             <span className="text-xl font-black text-zinc-900">{cartTotal.toLocaleString()} so&apos;m</span>
                           </div>
-                          
+
                           {/* Desktopda sotish tugmasi (Telegram MainButton ham bor, lekin bu qulaylik uchun) */}
-                          <Button 
+                          <Button
                             className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl hidden lg:flex"
                             onClick={handleCheckout}
                             disabled={isProcessing}

@@ -25,12 +25,12 @@ export function StockTransferModule() {
   const { mutate: createTransfer, isPending } = useCreateTransfer();
   const { showToast } = useToast();
 
-  const filteredSellers = sellers.filter(s => 
+  const filteredSellers = sellers.filter(s =>
     `${s.firstName} ${s.lastName} ${s.username}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(productSearch.toLowerCase()) || 
+  const filteredProducts = products.filter(p =>
+    p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
     p.sku?.toLowerCase().includes(productSearch.toLowerCase())
   );
 
@@ -50,7 +50,7 @@ export function StockTransferModule() {
   const updateQuantity = (productId: string, qty: number) => {
     setBasket(basket.map(item => {
       if (item.product._id === productId) {
-        const max = item.product.stock;
+        const max = item.product.count;
         const newQty = Math.max(1, Math.min(qty, max));
         return { ...item, quantity: newQty };
       }
@@ -113,8 +113,8 @@ export function StockTransferModule() {
         <div className="space-y-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input 
-              placeholder="Sotuvchini qidirish..." 
+            <Input
+              placeholder="Sotuvchini qidirish..."
               className="pl-10"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -122,8 +122,8 @@ export function StockTransferModule() {
           </div>
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
             {filteredSellers.map((seller) => (
-              <Card 
-                key={seller._id} 
+              <Card
+                key={seller._id}
                 className={`cursor-pointer transition-all hover:border-primary/50 ${selectedSeller?._id === seller._id ? "border-primary bg-primary/5" : ""}`}
                 onClick={() => setSelectedSeller(seller)}
               >
@@ -159,8 +159,8 @@ export function StockTransferModule() {
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input 
-              placeholder="Mahsulotlarni qidirish..." 
+            <Input
+              placeholder="Mahsulotlarni qidirish..."
               className="pl-10"
               value={productSearch}
               onChange={(e) => setProductSearch(e.target.value)}
@@ -172,14 +172,14 @@ export function StockTransferModule() {
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start mb-2">
                     <p className="font-bold truncate">{product.name}</p>
-                    <span className="text-xs bg-secondary px-2 py-0.5 rounded">{product.category}</span>
+                    <span className="text-xs bg-secondary px-2 py-0.5 rounded">{product.category.name}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-4">Omborda: {product.stock} ta</p>
-                  <Button 
-                    variant={basket.find(i => i.product._id === product._id) ? "secondary" : "outline"} 
+                  <p className="text-sm text-muted-foreground mb-4">Omborda: {product.count} ta</p>
+                  <Button
+                    variant={basket.find(i => i.product._id === product._id) ? "secondary" : "outline"}
                     className="w-full"
                     onClick={() => addToBasket(product)}
-                    disabled={product.stock === 0}
+                    disabled={product.count === 0}
                   >
                     <Plus className="mr-2 h-4 w-4" /> Qo&apos;shish
                   </Button>
@@ -208,29 +208,29 @@ export function StockTransferModule() {
                 <CardContent className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
                     <p className="font-bold">{item.product.name}</p>
-                    <p className="text-sm text-muted-foreground">Omborda bor: <span className="font-medium text-foreground">{item.product.stock} dona</span></p>
+                    <p className="text-sm text-muted-foreground">Omborda bor: <span className="font-medium text-foreground">{item.product.count} dona</span></p>
                   </div>
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center border rounded-lg">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => updateQuantity(item.product._id, item.quantity - 1)}
                         disabled={item.quantity <= 1}
                       >
                         <Minus className="h-4 w-4" />
                       </Button>
-                      <Input 
-                        type="number" 
+                      <Input
+                        type="number"
                         value={item.quantity}
                         onChange={(e) => updateQuantity(item.product._id, parseInt(e.target.value) || 1)}
                         className="w-16 border-0 text-center focus-visible:ring-0"
                       />
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => updateQuantity(item.product._id, item.quantity + 1)}
-                        disabled={item.quantity >= item.product.stock}
+                        disabled={item.quantity >= item.product.count}
                       >
                         <Plus className="h-4 w-4" />
                       </Button>

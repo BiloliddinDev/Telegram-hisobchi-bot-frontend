@@ -76,12 +76,12 @@ export function ProductTable({ products }: ProductTableProps) {
                     <div className="font-medium">{product.name}</div>
                     {product.color && <div className="text-xs text-muted-foreground">Rang: {product.color}</div>}
                   </td>
-                  <td className="p-4 align-middle">{product.category}</td>
+                  <td className="p-4 align-middle">{product.category.name}</td>
                   <td className="p-4 align-middle text-right">{(product.costPrice || 0).toLocaleString()}</td>
                   <td className="p-4 align-middle text-right font-semibold text-green-600">{(product.price || 0).toLocaleString()}</td>
                   <td className="p-4 align-middle text-right">
-                    <span className={product.stock < 10 ? "text-red-500 font-bold" : ""}>
-                      {product.stock}
+                    <span className={product.count < 10 ? "text-red-500 font-bold" : ""}>
+                      {product.count}
                     </span>
                   </td>
                   <td className="p-4 align-middle text-center">

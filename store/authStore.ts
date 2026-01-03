@@ -31,7 +31,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ loading: true, error: null });
     try {
       const telegramId = getTelegramUserId();
-      // const  telegramId = 1261889753
       console.log("Fetching user with Telegram ID:", telegramId);
 
       if (!telegramId) {
@@ -45,9 +44,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch (error: unknown) {
       console.error("Error fetching user:", error);
       let errorMessage = "Foydalanuvchi ma'lumotlarini yuklashda xatolik";
-      
+
       if (axios.isAxiosError(error)) {
-        errorMessage = (error.response?.data as { error?: string })?.error || error.message;
+        errorMessage =
+          (error.response?.data as { error?: string })?.error || error.message;
       } else if (error instanceof Error) {
         errorMessage = error.message;
       }
