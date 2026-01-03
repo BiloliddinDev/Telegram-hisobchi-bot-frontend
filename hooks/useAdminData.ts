@@ -14,11 +14,15 @@ export const useSellers = () => {
 	});
 };
 
-export const useReports = () => {
+export const useReports = (year: string, month: string) => {
 	return useQuery<Report>({
-		queryKey: ["reports"],
+		queryKey: ["reports", year, month],
 		queryFn: async () => {
-			const { data } = await api.get("/admin/reports/monthly");
+			const params = new URLSearchParams();
+			if (year) params.append("year", year);
+			if (month && month !== "all") params.append("month", month);
+			const { data } = await api.get(`/admin/reports/monthly?${params.toString()}`);
+			console.log(data, "This is Filtered Report data");
 			return data;
 		},
 	});
