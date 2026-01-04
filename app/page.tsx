@@ -34,7 +34,7 @@ export default function Home() {
           if (!telegramId) {
             console.error("Telegram ID not found");
             setInitError(
-              "Telegram ID topilmadi. Iltimos, Telegram orqali kirish."
+              "Telegram ID topilmadi. Iltimos, Telegram orqali kirish.",
             );
             return;
           }
@@ -44,18 +44,21 @@ export default function Home() {
           await fetchUser();
           console.log("User fetch completed");
         } else {
-          console.log("Not in Telegram environment, window.location.href:", window.location.href);
+          console.log(
+            "Not in Telegram environment, window.location.href:",
+            window.location.href,
+          );
           const isTelegram =
             window.location.href.includes("t.me") ||
             window.location.href.includes("telegram.org");
 
           if (!isTelegram) {
             setInitError(
-              "Bu ilova faqat Telegram orqali ishlaydi. Telegram bot orqali kirish."
+              "Bu ilova faqat Telegram orqali ishlaydi. Telegram bot orqali kirish.",
             );
           } else {
             setInitError(
-              "Telegram WebApp yuklanmadi. Qaytadan urinib ko'ring."
+              "Telegram WebApp yuklanmadi. Qaytadan urinib ko'ring.",
             );
           }
         }
@@ -86,7 +89,7 @@ export default function Home() {
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Biloliddin Salimov...</p>
+          <p className="mt-4 text-muted-foreground">Yuklanmoqda...</p>
         </div>
       </div>
     );

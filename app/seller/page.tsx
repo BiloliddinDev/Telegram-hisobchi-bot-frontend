@@ -1,324 +1,541 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useSellerStocks, useSellerSalesHistory, useProcessSale } from "@/hooks/useSellerData";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
-import { useToast } from "@/hooks/useToast";
-import { Search, ShoppingCart, Plus, Minus, ShoppingBag } from "lucide-react";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Image from "next/image";
+import { useToast } from "@/hooks/useToast";
+import {
+  useSellerProducts,
+  useSellerSales,
+  useSellerReports,
+} from "@/hooks/useSellerData";
+import { Product } from "@/interface/products.type";
+import { Sale } from "@/interface/sale.type";
+import { useCreateSale } from "@/hooks/useSales";
+import {
+  ShoppingCart,
+  CheckCircle2,
+  Search,
+  Trash2,
+  Minus,
+  Plus,
+  Store,
+  History,
+  BarChart3,
+  ShoppingBag,
+  Package,
+  Wallet,
+} from "lucide-react";
+import { getTelegramData } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { SaleEntry, SellerStock } from "@/interface/seller.type";
-import { StockSkeleton, HistorySkeleton } from "@/components/seller/SellerSkeleton";
-import {Skeleton} from "@/components/ui/skeleton";
 
-interface ApiError {
-	response?: {
-		data?: {
-			message?: string;
-		};
-	};
-	message: string;
+interface CartItem {
+  product: Product;
+  quantity: number;
 }
 
 export default function SellerPage() {
-	const { user } = useAuthStore();
-	const { showToast } = useToast();
+  const router = useRouter();
+  const { user } = useAuthStore();
+  const { showToast } = useToast();
 
-	const [searchTerm, setSearchTerm] = useState("");
-	const [isModalOpen, setIsModalOpen] = useState(false);
+  // Hooklar
+  const {
+    data: products = [],
+    isLoading: productsLoading,
+    refetch: refetchProducts,
+  } = useSellerProducts();
+  const {
+    data: sales = [],
+    isLoading: salesLoading,
+    refetch: refetchSales,
+  } = useSellerSales();
+  const {
+    data: reports,
+    isLoading: reportsLoading,
+    refetch: refetchReports,
+  } = useSellerReports();
+  const { mutateAsync: createSale } = useCreateSale();
 
-	const { data: stockData, isLoading: stockLoading } = useSellerStocks();
-	const { data: salesData, isLoading: salesLoading } = useSellerSalesHistory();
-	const { mutateAsync: processSale, isPending: isSelling } = useProcessSale();
+  const [activeTab, setActiveTab] = useState("products");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [cart, setCart] = useState<Record<string, CartItem>>({});
+  const [isProcessing, setIsProcessing] = useState(false);
 
-	const [cart, setCart] = useState<Record<string, { stock: SellerStock; qty: number; price: number }>>({});
-	const [customer, setCustomer] = useState({ name: "", phone: "", notes: "" });
+  // Filterlangan mahsulotlar
+  const filteredProducts = useMemo(
+    () =>
+      products.filter(
+        (p: Product) =>
+          p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.sku?.toLowerCase().includes(searchTerm.toLowerCase()),
+      ),
+    [products, searchTerm],
+  );
 
-	const filteredStocks = useMemo(() =>
-		stockData?.stocks.filter(s =>
-			s.product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			s.product.sku?.toLowerCase().includes(searchTerm.toLowerCase())
-		) || [], [stockData, searchTerm]);
+  // Role check
+  useEffect(() => {
+    if (user && user.role !== "seller") router.push("/");
+  }, [user, router]);
 
-	const handleAddToCart = (stock: SellerStock) => {
-		const current = cart[stock.product._id];
-		const currentQty = current?.qty || 0;
+  // Cart logics
+  const handleAddToCart = (product: Product) => {
+    if (product.count <= 0) {
+      showToast("Mahsulot qolmagan", "error");
+      return;
+    }
+    setCart((prev) => {
+      const currentQty = prev[product._id]?.quantity || 0;
+      if (currentQty >= product.count) {
+        showToast("Zaxiradan ortiq sotib bo'lmaydi", "error");
+        return prev;
+      }
+      return { ...prev, [product._id]: { product, quantity: currentQty + 1 } };
+    });
+  };
 
-		if (currentQty >= stock.quantity) {
-			showToast("Ombordagi miqdordan ko'p sotib bo'lmaydi", "error");
-			return;
-		}
+  const updateCartQuantity = (productId: string, delta: number) => {
+    setCart((prev) => {
+      const item = prev[productId];
+      if (!item) return prev;
+      const newQty = item.quantity + delta;
+      if (newQty <= 0) {
+        const nextCart = { ...prev };
+        delete nextCart[productId];
+        return nextCart;
+      }
+      if (newQty > item.product.count) return prev;
+      return { ...prev, [productId]: { ...item, quantity: newQty } };
+    });
+  };
 
-		setCart(prev => ({
-			...prev,
-			[stock.product._id]: {
-				stock,
-				qty: currentQty + 1,
-				price: stock.product.price
-			}
-		}));
-	};
+  const cartTotal = useMemo(
+    () =>
+      Object.values(cart).reduce(
+        (sum, item) => sum + item.product.price * item.quantity,
+        0,
+      ),
+    [cart],
+  );
 
-	const updateQty = (id: string, delta: number) => {
-		setCart(prev => {
-			const item = prev[id];
-			if (!item) return prev;
-			const newQty = item.qty + delta;
-			if (newQty <= 0) {
-				const newState = { ...prev };
-				delete newState[id];
-				return newState;
-			}
-			if (newQty > item.stock.quantity) return prev;
-			return { ...prev, [id]: { ...item, qty: newQty } };
-		});
-	};
+  const cartItemsCount = useMemo(
+    () => Object.values(cart).reduce((sum, item) => sum + item.quantity, 0),
+    [cart],
+  );
 
-	const updatePrice = (id: string, newPrice: number) => {
-		setCart(prev => ({
-			...prev,
-			[id]: { ...prev[id], price: newPrice }
-		}));
-	};
+  // Checkout
+  const handleCheckout = useCallback(async () => {
+    const items = Object.values(cart);
+    if (items.length === 0) return;
 
-	const totalCartAmount = Object.values(cart).reduce((sum, item) => sum + (item.price * item.qty), 0);
+    setIsProcessing(true);
+    const tg = getTelegramData();
+    tg?.MainButton.showProgress(false);
 
-	const onCheckout = () => {
-		if (Object.keys(cart).length === 0) return;
-		setIsModalOpen(true);
-	};
+    try {
+      for (const item of items) {
+        await createSale({
+          productId: item.product._id,
+          quantity: item.quantity,
+          price: item.product.price,
+        });
+      }
+      showToast("Savdo muvaffaqiyatli yakunlandi!", "success");
+      setCart({});
+      refetchProducts();
+      refetchSales();
+      refetchReports();
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        showToast(error?.message || "Xatolik yuz berdi", "error");
+      } else {
+        showToast("Xatolik yuz berdi", "error");
+      }
+    } finally {
+      setIsProcessing(false);
+      tg?.MainButton.hideProgress();
+    }
+  }, [
+    cart,
+    createSale,
+    refetchProducts,
+    refetchSales,
+    refetchReports,
+    showToast,
+  ]);
 
-	const handleFinalSubmit = async () => {
-		try {
-			// Promise.all orqali barcha sotuvlarni parallel yuboramiz (tezroq bo'ladi)
-			await Promise.all(
-				Object.values(cart).map(item =>
-					processSale({
-						productId: item.stock.product._id,
-						quantity: item.qty,
-						price: item.price,
-						customerName: customer.name,
-						customerPhone: customer.phone,
-						notes: customer.notes
-					})
-				)
-			);
+  // Telegram integration
+  useEffect(() => {
+    const tg = getTelegramData();
+    if (!tg) return;
+    if (cartItemsCount > 0 && activeTab === "products") {
+      tg.MainButton.setParams({
+        text: `TASDIQLASH (${cartTotal.toLocaleString()} so'm)`,
+        color: "#2563eb",
+        is_visible: true,
+        is_active: !isProcessing,
+      });
+      tg.MainButton.onClick(handleCheckout);
+    } else {
+      tg.MainButton.hide();
+    }
+    return () => tg.MainButton.offClick(handleCheckout);
+  }, [cartItemsCount, cartTotal, activeTab, handleCheckout, isProcessing]);
 
-			showToast("Sotuv muvaffaqiyatli yakunlandi", "success");
-			setCart({});
-			setCustomer({ name: "", phone: "", notes: "" });
-			setIsModalOpen(false);
-		} catch (error) {
-			const apiErr = error as ApiError;
-			const message = apiErr.response?.data?.message || "Sotuvda xatolik yuz berdi";
-			showToast(message, "error");
-		}
-	};
+  if (productsLoading || salesLoading || reportsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
+      </div>
+    );
+  }
 
-	return (
-		<div className="min-h-screen bg-[#f8f9fa] pb-20">
-			<header className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-20 shadow-sm flex justify-between items-center">
-				<div>
-					<h1 className="text-xl font-bold flex items-center gap-2 text-gray-900">
-						<ShoppingBag className="text-primary w-6 h-6" /> Sotuv Paneli
-					</h1>
-					<p className="text-xs text-muted-foreground font-medium">
-						Sotuvchi: {user?.firstName || user?.username || "Admin"}
-					</p>
-				</div>
-				<div className="flex items-center gap-3 text-sm font-semibold">
-					<span className="text-gray-400">Jami qoldiq:</span>
-					{stockLoading ? <Skeleton className="h-5 w-12" /> : (
-						<Badge variant="outline" className="border-gray-300">{stockData?.summary.totalQuantity} ta</Badge>
-					)}
-				</div>
-			</header>
+  return (
+    <div className="min-h-screen bg-[#F8FAFC] pb-24">
+      {/* Header */}
+      <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 py-3 shadow-sm">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div>
+            <h1 className="text-lg font-black text-gray-900 tracking-tight flex items-center gap-2">
+              <ShoppingBag className="w-5 h-5 text-blue-600" /> SHOP VENTURE
+            </h1>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              {user?.firstName} • {new Date().toLocaleDateString("uz-UZ")}
+            </p>
+          </div>
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="bg-gray-100 p-1 rounded-xl"
+          >
+            <TabsList className="bg-transparent h-8 gap-1">
+              <TabsTrigger
+                value="products"
+                className="rounded-lg px-3 text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm"
+              >
+                <Store className="w-3.5 h-3.5 mr-1" /> {"Do'kon"}
+              </TabsTrigger>
+              <TabsTrigger
+                value="sales"
+                className="rounded-lg px-3 text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm"
+              >
+                <History className="w-3.5 h-3.5 mr-1" /> Tarix
+              </TabsTrigger>
+              <TabsTrigger
+                value="reports"
+                className="rounded-lg px-3 text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm"
+              >
+                <BarChart3 className="w-3.5 h-3.5 mr-1" /> Stat
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+      </header>
 
-			<main className="max-w-7xl mx-auto p-4 md:p-6">
-				<Tabs defaultValue="products" className="space-y-6">
-					<TabsList className="w-full justify-start border-b rounded-none bg-transparent h-auto p-0 gap-8">
-						<TabsTrigger value="products" className="data-[state=active]:border-primary data-[state=active]:text-primary border-b-2 border-transparent rounded-none px-2 py-3 bg-transparent shadow-none font-bold text-sm transition-all uppercase">
-							Mahsulotlar
-						</TabsTrigger>
-						<TabsTrigger value="history" className="data-[state=active]:border-primary data-[state=active]:text-primary border-b-2 border-transparent rounded-none px-2 py-3 bg-transparent shadow-none font-bold text-sm transition-all uppercase">
-							Sotuv Tarixi
-						</TabsTrigger>
-					</TabsList>
+      <main className="max-w-7xl mx-auto p-4">
+        <Tabs value={activeTab}>
+          {/* 1. DO'KON TAB */}
+          <TabsContent value="products" className="mt-0 outline-none space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Mahsulotlar Ro'yxati */}
+              <div className="lg:col-span-2 space-y-4">
+                <div className="relative group">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                  <Input
+                    placeholder="Mahsulot nomi yoki SKU..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="h-12 pl-12 rounded-2xl border-none shadow-md bg-white focus-visible:ring-2 focus-visible:ring-blue-500"
+                  />
+                </div>
 
-					<TabsContent value="products" className="mt-0 outline-none">
-						<div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-							<div className="lg:col-span-3 space-y-4">
-								<div className="relative">
-									<Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-									<Input
-										placeholder="Nomi yoki SKU bo'yicha qidirish..."
-										className="pl-10 h-11 bg-white border-gray-200 rounded-md focus-visible:ring-primary"
-										value={searchTerm}
-										onChange={(e) => setSearchTerm(e.target.value)}
-									/>
-								</div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {filteredProducts.map((product: Product) => (
+                    <div
+                      key={product._id}
+                      onClick={() => handleAddToCart(product)}
+                      className="group relative bg-white rounded-3xl border border-gray-100 p-3 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer overflow-hidden"
+                    >
+                      <div className="aspect-square rounded-2xl bg-gray-50 mb-3 overflow-hidden relative">
+                        {product.image ? (
+                          <Image
+                            src={product.image}
+                            className="w-full h-full object-cover"
+                            alt=""
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-300">
+                            <Package />
+                          </div>
+                        )}
+                        {cart[product._id] && (
+                          <div className="absolute inset-0 bg-blue-600/10 backdrop-blur-[2px] flex items-center justify-center">
+                            <Badge className="bg-blue-600 text-white border-none h-8 w-8 rounded-full flex items-center justify-center text-sm">
+                              {cart[product._id].quantity}
+                            </Badge>
+                          </div>
+                        )}
+                        {product.count <= 5 && product.count > 0 && (
+                          <span className="absolute top-2 right-2 bg-orange-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase">
+                            Kam qoldi
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-xs font-bold text-gray-800 line-clamp-1">
+                        {product.name}
+                      </h3>
+                      <div className="flex justify-between items-center mt-1">
+                        <p className="text-[11px] font-black text-blue-600">
+                          {product.price.toLocaleString()} {"so'm"}
+                        </p>
+                        <p className="text-[9px] font-bold text-gray-400">
+                          {product.count} ta
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-								{stockLoading ? (
-									<StockSkeleton />
-								) : (
-									<div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-										{filteredStocks.map((stock : SellerStock) => (
-											<Card
-												key={stock._id}
-												onClick={() => handleAddToCart(stock)}
-												className="cursor-pointer hover:border-primary transition-colors border-gray-200 shadow-none rounded-sm"
-											>
-												<CardContent className="p-4 space-y-3">
-													<div className="flex justify-between items-start">
-														<h3 className="font-bold text-sm text-gray-900 line-clamp-2">{stock.product.name}</h3>
-														{cart[stock.product._id] && (
-															<Badge className="bg-primary text-white ml-2">{cart[stock.product._id].qty}</Badge>
-														)}
-													</div>
-													<div className="flex justify-between items-end">
-														<div>
-															<p className="text-xs text-gray-400 font-medium italic">Narxi:</p>
-															<p className="font-bold text-primary">{stock.product.price.toLocaleString()} {`so'm`}</p>
-														</div>
-														<Badge variant="secondary" className="text-[10px] font-bold bg-gray-100">{stock.quantity} ta mavjud</Badge>
-													</div>
-												</CardContent>
-											</Card>
-										))}
-									</div>
-								)}
-							</div>
+              {/* SAVAT (DESKTOP) */}
+              <div className="hidden lg:block">
+                <Card className="border-none shadow-2xl rounded-[32px] sticky top-24 overflow-hidden">
+                  <CardHeader className="bg-gray-900 text-white p-6">
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-xl flex items-center gap-2">
+                        <ShoppingCart className="w-6 h-6" /> Savat
+                      </CardTitle>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setCart({})}
+                        className="text-gray-400 hover:text-white"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    {cartItemsCount === 0 ? (
+                      <div className="py-20 text-center text-gray-400">
+                        <ShoppingBag className="w-12 h-12 mx-auto mb-4 opacity-10" />
+                        <p className="text-sm font-medium">
+                          {"Savat hali bo'sh"}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="max-h-[400px] overflow-y-auto p-4 space-y-3">
+                        {Object.values(cart).map((item) => (
+                          <div
+                            key={item.product._id}
+                            className="flex items-center gap-3 bg-gray-50 p-3 rounded-2xl border border-gray-100"
+                          >
+                            <div className="w-10 h-10 rounded-lg bg-white border flex-shrink-0">
+                              <Image
+                                src={item.product.image}
+                                className="w-full h-full object-cover rounded-lg"
+                                alt=""
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-[11px] font-bold truncate">
+                                {item.product.name}
+                              </p>
+                              <p className="text-[10px] text-blue-600 font-bold">
+                                {(
+                                  item.product.price * item.quantity
+                                ).toLocaleString()}{" "}
+                                {"so'm"}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="icon"
+                                variant="outline"
+                                className="h-6 w-6 rounded-md"
+                                onClick={() =>
+                                  updateCartQuantity(item.product._id, -1)
+                                }
+                              >
+                                <Minus className="w-3 h-3" />
+                              </Button>
+                              <span className="text-xs font-black">
+                                {item.quantity}
+                              </span>
+                              <Button
+                                size="icon"
+                                variant="outline"
+                                className="h-6 w-6 rounded-md"
+                                onClick={() =>
+                                  updateCartQuantity(item.product._id, 1)
+                                }
+                              >
+                                <Plus className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div className="p-6 bg-gray-50 border-t border-gray-100">
+                      <div className="flex justify-between items-center mb-4">
+                        <span className="text-gray-500 font-bold text-sm uppercase">
+                          Jami summan:
+                        </span>
+                        <span className="text-2xl font-black text-gray-900">
+                          {cartTotal.toLocaleString()}{" "}
+                          <span className="text-xs font-normal">{"so'm"}</span>
+                        </span>
+                      </div>
+                      <Button
+                        className="w-full h-14 bg-blue-600 hover:bg-blue-700 rounded-2xl text-lg font-black shadow-lg shadow-blue-100"
+                        disabled={isProcessing || cartItemsCount === 0}
+                        onClick={handleCheckout}
+                      >
+                        {isProcessing
+                          ? "YUBORILMOQDA..."
+                          : "SOTUVNI TASDIQLASH"}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
 
-							<div className="lg:col-span-1">
-								<Card className="border-gray-200 shadow-sm rounded-sm sticky top-24">
-									<CardHeader className="p-4 border-b bg-gray-50/50">
-										<CardTitle className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider">
-											<ShoppingCart size={18} /> Savat
-										</CardTitle>
-									</CardHeader>
-									<CardContent className="p-0">
-										<div className="max-h-[400px] overflow-y-auto divide-y">
-											{Object.values(cart).length === 0 ? (
-												<div className="p-10 text-center text-gray-400 text-xs font-medium">{`Savat bo'sh`}</div>
-											) : (
-												Object.values(cart).map((item) => (
-													<div key={item.stock._id} className="p-3 space-y-3">
-														<div className="flex justify-between">
-															<p className="text-[11px] font-bold line-clamp-1 flex-1 uppercase">{item.stock.product.name}</p>
-															<button className="text-gray-400 hover:text-red-500" onClick={() => updateQty(item.stock.product._id, -item.qty)}>✕</button>
-														</div>
-														<div className="flex items-center gap-2">
-															<span className="text-[10px] text-gray-400 font-bold uppercase">Sotuv Narxi:</span>
-															<Input
-																type="number"
-																className="h-7 text-xs font-bold border-gray-300 rounded-none w-24"
-																value={item.price}
-																onChange={(e) => updatePrice(item.stock.product._id, Number(e.target.value))}
-															/>
-														</div>
-														<div className="flex items-center justify-between">
-															<div className="flex items-center border rounded-md bg-white">
-																<Button variant="ghost" size="icon" className="h-6 w-6 rounded-none border-r p-0" onClick={() => updateQty(item.stock.product._id, -1)}><Minus size={10}/></Button>
-																<span className="text-xs font-bold w-8 text-center">{item.qty}</span>
-																<Button variant="ghost" size="icon" className="h-6 w-6 rounded-none border-l p-0" onClick={() => updateQty(item.stock.product._id, 1)}><Plus size={10}/></Button>
-															</div>
-															<p className="text-xs font-bold text-gray-900">{(item.price * item.qty).toLocaleString()}{`so'm`}</p>
-														</div>
-													</div>
-												))
-											)}
-										</div>
-										<div className="p-4 bg-gray-100/50 border-t border-gray-200">
-											<div className="flex justify-between items-center mb-4">
-												<span className="text-xs font-bold text-gray-500 uppercase">Umumiy:</span>
-												<span className="text-lg font-black">{totalCartAmount.toLocaleString()} {`so'm`}</span>
-											</div>
-											<Button
-												className="w-full bg-primary hover:bg-primary/90 font-bold h-11 rounded-sm uppercase text-xs tracking-widest shadow-md"
-												disabled={Object.keys(cart).length === 0}
-												onClick={onCheckout}
-											>
-												Sotuvni yakunlash
-											</Button>
-										</div>
-									</CardContent>
-								</Card>
-							</div>
-						</div>
-					</TabsContent>
+          {/* 2. TARIX TAB */}
+          <TabsContent value="sales" className="mt-0 outline-none space-y-3">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-black text-gray-800 italic">
+                Oxirgi savdolaringiz
+              </h2>
+              <Badge variant="outline" className="rounded-lg">
+                {sales.length} ta
+              </Badge>
+            </div>
+            {sales.map((sale: Sale) => (
+              <div
+                key={sale._id}
+                className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm flex justify-between items-center"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
+                    <CheckCircle2 className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-gray-900">
+                      {sale.product?.name}
+                    </h4>
+                    <p className="text-[10px] font-bold text-gray-400">
+                      {sale.quantity} ta x {sale.price?.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="font-black text-gray-900">
+                    {(sale.totalPrice || 0).toLocaleString()}{" "}
+                    <span className="text-[10px]">{"so'm"}</span>
+                  </p>
+                  <p className="text-[10px] font-bold text-gray-300">
+                    {new Date(sale.createdAt).toLocaleTimeString("uz-UZ")}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </TabsContent>
 
-					<TabsContent value="history" className="mt-0 outline-none">
-						{salesLoading ? (
-							<HistorySkeleton />
-						) : (
-							<div className="bg-white border border-gray-200 rounded-sm overflow-hidden">
-								<table className="w-full text-sm text-left">
-									<thead className="bg-gray-50 text-gray-500 font-bold text-[10px] uppercase border-b">
-									<tr>
-										<th className="px-4 py-3">Mahsulot nomi</th>
-										<th className="px-4 py-3">{`Mijoz ma'lumotlari`}</th>
-										<th className="px-4 py-3 text-center">Miqdor</th>
-										<th className="px-4 py-3 text-right">Umumiy summa</th>
-										<th className="px-4 py-3 text-right">Sana / Vaqt</th>
-									</tr>
-									</thead>
-									<tbody className="divide-y divide-gray-100">
-									{salesData?.sales.map((sale: SaleEntry) => (
-										<tr key={sale._id} className="hover:bg-gray-50/50 transition-colors">
-											<td className="px-4 py-4 font-bold text-gray-900 uppercase text-[11px]">{sale.productId.name}</td>
-											<td className="px-4 py-4">
-												<p className="font-bold text-gray-700">{sale.customerName}</p>
-												<p className="text-[10px] text-gray-400 font-medium italic">{sale.customerPhone}</p>
-											</td>
-											<td className="px-4 py-4 text-center font-bold">{sale.quantity} ta</td>
-											<td className="px-4 py-4 text-right font-black text-primary">{sale.totalAmount.toLocaleString()}{`so'm`}</td>
-											<td className="px-4 py-4 text-right text-gray-400 text-[10px] font-bold">
-												{new Date(sale.timestamp).toLocaleDateString()} <br />
-												{new Date(sale.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-											</td>
-										</tr>
-									))}
-									</tbody>
-								</table>
-							</div>
-						)}
-					</TabsContent>
-				</Tabs>
-			</main>
+          {/* 3. STATISTIKA TAB */}
+          <TabsContent value="reports" className="mt-0 outline-none">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="bg-blue-600 text-white rounded-[32px] border-none shadow-xl shadow-blue-100 relative overflow-hidden group">
+                <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
+                  <Wallet size={120} />
+                </div>
+                <CardContent className="p-8">
+                  <p className="text-blue-100 text-xs font-black uppercase tracking-widest mb-2">
+                    Bugungi tushum
+                  </p>
+                  <h2 className="text-4xl font-black tabular-nums">
+                    {(reports?.summary?.totalRevenue || 0).toLocaleString()}{" "}
+                    <span className="text-sm font-normal">{"so'm"}</span>
+                  </h2>
+                </CardContent>
+              </Card>
 
-			<Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-				<DialogContent className="sm:max-w-[400px] rounded-none p-0 overflow-hidden border-none shadow-2xl">
-					<DialogHeader className="p-5 bg-gray-900 text-white rounded-none">
-						<DialogTitle className="text-sm font-bold uppercase tracking-[2px]">{`Mijozni ro'yxatga olish`}</DialogTitle>
-					</DialogHeader>
-					<div className="p-6 space-y-4 bg-white">
-						<div className="grid gap-1.5">
-							<label className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">{`Mijoz to'liq ismi`}</label>
-							<Input value={customer.name} onChange={(e) => setCustomer({...customer, name: e.target.value})} placeholder="Masalan: Ali Valiyev" className="rounded-none border-gray-300 focus:ring-primary" />
-						</div>
-						<div className="grid gap-1.5">
-							<label className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Telefon raqami</label>
-							<Input value={customer.phone} onChange={(e) => setCustomer({...customer, phone: e.target.value})} placeholder="+998 __ ___ __ __" className="rounded-none border-gray-300" />
-						</div>
-						<div className="grid gap-1.5">
-							<label className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Sotuv uchun izoh</label>
-							<Input value={customer.notes} onChange={(e) => setCustomer({...customer, notes: e.target.value})} placeholder="Ixtiyoriy..." className="rounded-none border-gray-300" />
-						</div>
-						<div className="pt-4 border-t border-dashed mt-4 flex justify-between items-center">
-							<p className="text-[10px] font-black text-gray-400 uppercase italic">{`To'lov miqdori:`}</p>
-							<p className="text-xl font-black text-primary">{totalCartAmount.toLocaleString()}{`so'm`}</p>
-						</div>
-						<Button className="w-full h-12 bg-primary hover:bg-primary/90 font-bold rounded-none text-xs uppercase tracking-widest" disabled={isSelling} onClick={handleFinalSubmit}>
-							{isSelling ? "Yuborilmoqda..." : "Tasdiqlash va Sotish"}
-						</Button>
-					</div>
-				</DialogContent>
-			</Dialog>
-		</div>
-	);
+              <div className="grid grid-cols-2 gap-4">
+                <StatCard
+                  title="Savdolar soni"
+                  value={reports?.summary?.totalSales || 0}
+                  unit="ta"
+                  icon={<ShoppingCart className="text-blue-500" />}
+                />
+                <StatCard
+                  title="Mahsulotlar"
+                  value={reports?.summary?.totalQuantity || 0}
+                  unit="ta"
+                  icon={<Package className="text-emerald-500" />}
+                />
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </main>
+
+      {cartItemsCount > 0 && activeTab === "products" && (
+        <div className="fixed bottom-6 left-4 right-4 lg:hidden z-50">
+          <div className="bg-gray-900 text-white p-4 rounded-3xl shadow-2xl flex justify-between items-center animate-in slide-in-from-bottom-10">
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase">
+                Savatda {cartItemsCount} ta tovar
+              </p>
+              <p className="text-lg font-black">
+                {cartTotal.toLocaleString()} {"so'm"}
+              </p>
+            </div>
+            <Button
+              onClick={handleCheckout}
+              className="bg-blue-600 rounded-2xl h-12 px-6 font-black active:scale-95 transition-transform"
+            >
+              SOTISH
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Yordamchi StatCard
+function StatCard({
+  title,
+  value,
+  unit,
+  icon,
+}: {
+  title: string;
+  value: number;
+  unit: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <Card className="border-none shadow-md rounded-[24px] bg-white group hover:bg-gray-50 transition-colors">
+      <CardContent className="p-5">
+        <div className="bg-gray-50 p-2 w-fit rounded-xl mb-3 group-hover:bg-white transition-colors">
+          {icon}
+        </div>
+        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter mb-1">
+          {title}
+        </p>
+        <h4 className="text-xl font-black text-gray-900">
+          {value}{" "}
+          <span className="text-xs font-normal text-gray-400">{unit}</span>
+        </h4>
+      </CardContent>
+    </Card>
+  );
 }
