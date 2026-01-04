@@ -13,13 +13,13 @@ export const useSellers = () => {
   });
 };
 
-export const useReports = (year: string, month: string) => {
+export const useReports = (start: string, end: string) => {
   return useQuery<Report>({
-    queryKey: ["reports", year, month],
+    queryKey: ["reports", start, end],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (year) params.append("year", year);
-      if (month && month !== "all") params.append("month", month);
+      if (start) params.append("start", start);
+      if (end) params.append("end", end);
       const { data } = await api.get(
         `/admin/reports/monthly?${params.toString()}`,
       );
