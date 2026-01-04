@@ -268,7 +268,7 @@ export default function SellerPage() {
 									</tr>
 									</thead>
 									<tbody className="divide-y divide-gray-100">
-									{salesData?.sales.map((sale: SaleEntry) => (
+									{salesData?.map((sale: SaleEntry) => (
 										<tr key={sale._id} className="hover:bg-gray-50/50 transition-colors">
 											<td className="px-4 py-4 font-bold text-gray-900 uppercase text-[11px]">{sale.productId.name}</td>
 											<td className="px-4 py-4">

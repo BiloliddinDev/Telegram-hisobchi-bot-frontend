@@ -1,13 +1,13 @@
 /* eslint-disable react/no-unescaped-entities */
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Seller } from "@/interface/seller.type";
+import { User } from "@/interface/User.type";
 import { Button } from "@/components/ui/button";
 import { Trash2, Phone, User as UserIcon } from "lucide-react";
 import { useDeleteSeller } from "@/hooks/useAdminData";
 import { useToast } from "@/hooks/useToast";
 import { EditSellerDialog } from "@/components/admin/EditSellerDialog";
 
-export function SellerCard({ seller }: { seller: Seller }) {
+export function SellerCard({ seller }: { seller: User }) {
   const { mutate: deleteSeller, isPending: isDeleting } = useDeleteSeller();
   const { showToast } = useToast();
 
@@ -24,7 +24,8 @@ export function SellerCard({ seller }: { seller: Seller }) {
     }
   };
 
-  const initials = `${seller.firstName?.[0] || ""}${seller.lastName?.[0] || ""}`.toUpperCase();
+  const initials =
+    `${seller.firstName?.[0] || ""}${seller.lastName?.[0] || ""}`.toUpperCase();
 
   return (
     <Card className="overflow-hidden hover:shadow-md transition-shadow">
@@ -56,7 +57,9 @@ export function SellerCard({ seller }: { seller: Seller }) {
                   {seller.firstName} {seller.lastName}
                 </h3>
                 <p className="text-sm text-muted-foreground flex items-center">
-                  <span className="truncate">@{seller.username || "username yo'q"}</span>
+                  <span className="truncate">
+                    @{seller.username || "username yo'q"}
+                  </span>
                 </p>
               </div>
             </div>

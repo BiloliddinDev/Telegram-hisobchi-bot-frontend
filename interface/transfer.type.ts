@@ -1,9 +1,9 @@
-import { Seller } from "./seller.type";
+import { User } from "@/interface/User.type";
 import { Product } from "./products.type";
 
 export interface Transfer {
 	_id: string;
-	seller: Seller;
+	seller: User;
 	product: Product;
 	quantity: number;
 	type: "transfer" | "return";

@@ -8,14 +8,14 @@ import { useSellers } from "@/hooks/useAdminData";
 import { useProducts } from "@/hooks/useProducts";
 import { useCreateTransfer } from "@/hooks/useTransfers";
 import { useToast } from "@/hooks/useToast";
-import { Seller } from "@/interface/seller.type";
+import { User } from "@/interface/User.type";
 import { Product } from "@/interface/products.type";
 import { Search, Plus, Minus, Trash2, CheckCircle2, ChevronRight, ChevronLeft, User as UserIcon } from "lucide-react";
 import axios from "axios";
 
 export function StockTransferModule() {
   const [step, setStep] = useState(1);
-  const [selectedSeller, setSelectedSeller] = useState<Seller | null>(null);
+  const [selectedSeller, setSelectedSeller] = useState<User | null>(null);
   const [basket, setBasket] = useState<{ product: Product; quantity: number }[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [productSearch, setProductSearch] = useState("");

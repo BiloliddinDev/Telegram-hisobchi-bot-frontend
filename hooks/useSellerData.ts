@@ -1,6 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { StockResponse, SaleEntry, CreateSalePayload } from "@/interface/seller.type";
+import {
+  StockResponse,
+  SaleEntry,
+  CreateSalePayload,
+} from "@/interface/seller.type";
 
 export const useSellerStocks = () => {
   return useQuery<StockResponse>({
@@ -16,8 +20,8 @@ export const useSellerSalesHistory = () => {
   return useQuery<SaleEntry[]>({
     queryKey: ["seller-sales-history"],
     queryFn: async () => {
-      const { data } = await api.get("/sales"); // Sen bergan endpoint
-      return data.se;
+      const { data } = await api.get("/sales"); 
+      return data.sales;
     },
   });
 };
