@@ -1,35 +1,37 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { Product } from "@/interface/products.type";
-import { Sale } from "@/interface/sale.type";
-import { Report } from "@/interface/report.type";
+import { StockResponse, SalesResponse, CreateSalePayload } from "@/interface/seller.type";
 
-export const useSellerProducts = () => {
-  return useQuery<Product[]>({
-    queryKey: ["seller-products"],
+export const useSellerStocks = () => {
+  return useQuery<StockResponse>({
+    queryKey: ["seller-stocks"],
     queryFn: async () => {
-      const { data } = await api.get("/seller/products");
-      return data.products;
-    },
-  });
-};
-
-export const useSellerSales = () => {
-  return useQuery<Sale[]>({
-    queryKey: ["seller-sales"],
-    queryFn: async () => {
-      const { data } = await api.get("/seller/sales");
-      return data.sales;
-    },
-  });
-};
-
-export const useSellerReports = () => {
-  return useQuery<Report>({
-    queryKey: ["seller-reports"],
-    queryFn: async () => {
-      const { data } = await api.get("/seller/reports");
+      const { data } = await api.get("/seller/stocks");
       return data;
+    },
+  });
+};
+
+export const useSellerSalesHistory = () => {
+  return useQuery<SalesResponse>({
+    queryKey: ["seller-sales-history"],
+    queryFn: async () => {
+      const { data } = await api.get("/sales"); // Sen bergan endpoint
+      return data;
+    },
+  });
+};
+
+export const useProcessSale = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: CreateSalePayload) => {
+      const { data } = await api.post("/sales", payload);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["seller-stocks"] });
+      queryClient.invalidateQueries({ queryKey: ["seller-sales-history"] });
     },
   });
 };
