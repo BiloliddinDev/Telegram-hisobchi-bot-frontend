@@ -4,22 +4,28 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/useToast";
-import { useSellerProducts, useSellerSales, useSellerReports } from "@/hooks/useSellerData";
+import {
+  useSellerProducts,
+  useSellerSales,
+  useSellerReports,
+} from "@/hooks/useSellerData";
 import { ProductCard } from "@/components/ProductCard";
 import { Product } from "@/interface/products.type";
 import { Sale } from "@/interface/sale.type";
 import { useCreateSale } from "@/hooks/useSales";
-import { ShoppingCart, CheckCircle2, Search, Trash2, Minus, Plus } from "lucide-react";
+import {
+  ShoppingCart,
+  CheckCircle2,
+  Search,
+  Trash2,
+  Minus,
+  Plus,
+} from "lucide-react";
 import axios from "axios";
 import { getTelegramData } from "@/lib/api";
 
@@ -33,9 +39,24 @@ export default function SellerPage() {
   const { user } = useAuthStore();
   const { ToastComponent, showToast } = useToast();
 
-  const { data: products = [], isLoading: productsLoading, refetch: refetchProducts, error: productsError } = useSellerProducts();
-  const { data: sales = [], isLoading: salesLoading, refetch: refetchSales, error: salesError } = useSellerSales();
-  const { data: reports, isLoading: reportsLoading, refetch: refetchReports, error: reportsError } = useSellerReports();
+  const {
+    data: products = [],
+    isLoading: productsLoading,
+    refetch: refetchProducts,
+    error: productsError,
+  } = useSellerProducts();
+  const {
+    data: sales = [],
+    isLoading: salesLoading,
+    refetch: refetchSales,
+    error: salesError,
+  } = useSellerSales();
+  const {
+    data: reports,
+    isLoading: reportsLoading,
+    refetch: refetchReports,
+    error: reportsError,
+  } = useSellerReports();
   const { mutateAsync: createSale } = useCreateSale();
 
   const [activeTab, setActiveTab] = useState("products");
@@ -43,9 +64,10 @@ export default function SellerPage() {
   const [cart, setCart] = useState<Record<string, CartItem>>({});
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.sku?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProducts = products.filter(
+    (p) =>
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.sku?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   useEffect(() => {
@@ -60,7 +82,7 @@ export default function SellerPage() {
       return;
     }
 
-    setCart(prev => {
+    setCart((prev) => {
       const currentQty = prev[product?._id]?.quantity || 0;
       if (currentQty >= product.count) {
         showToast("Ombordagi miqdordan ko'p sotib bo'lmaydi", "error");
@@ -70,14 +92,14 @@ export default function SellerPage() {
         ...prev,
         [product._id]: {
           product,
-          quantity: currentQty + 1
-        }
+          quantity: currentQty + 1,
+        },
       };
     });
   };
 
   const updateCartQuantity = (productId: string, delta: number) => {
-    setCart(prev => {
+    setCart((prev) => {
       const item = prev[productId];
       if (!item) return prev;
 
@@ -95,21 +117,24 @@ export default function SellerPage() {
 
       return {
         ...prev,
-        [productId]: { ...item, quantity: newQty }
+        [productId]: { ...item, quantity: newQty },
       };
     });
   };
 
+  const cartTotal = useMemo(
+    () =>
+      Object.values(cart).reduce(
+        (sum, item) => sum + item.product.price * item.quantity,
+        0,
+      ),
+    [cart],
+  );
 
-  const cartTotal = useMemo(() => Object.values(cart).reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
-    0
-  ), [cart]);
-
-  const cartItemsCount = useMemo(() => Object.values(cart).reduce(
-    (sum, item) => sum + item.quantity,
-    0
-  ), [cart]);
+  const cartItemsCount = useMemo(
+    () => Object.values(cart).reduce((sum, item) => sum + item.quantity, 0),
+    [cart],
+  );
 
   const handleCheckout = useCallback(async () => {
     const items = Object.values(cart);
@@ -145,7 +170,14 @@ export default function SellerPage() {
       setIsProcessing(false);
       tg?.MainButton.hideProgress();
     }
-  }, [cart, createSale, refetchProducts, refetchSales, refetchReports, showToast]);
+  }, [
+    cart,
+    createSale,
+    refetchProducts,
+    refetchSales,
+    refetchReports,
+    showToast,
+  ]);
 
   // Telegram MainButton integration
   useEffect(() => {
@@ -157,7 +189,7 @@ export default function SellerPage() {
         text: `Sotishni tasdiqlash (${cartTotal.toLocaleString()} so'm)`,
         color: "#10b981", // green-500
         is_visible: true,
-        is_active: !isProcessing
+        is_active: !isProcessing,
       });
       tg.MainButton.onClick(handleCheckout);
     } else {
@@ -178,7 +210,8 @@ export default function SellerPage() {
   }
 
   const isUnauthorized =
-    (axios.isAxiosError(productsError) && productsError.response?.status === 401) ||
+    (axios.isAxiosError(productsError) &&
+      productsError.response?.status === 401) ||
     (axios.isAxiosError(salesError) && salesError.response?.status === 401) ||
     (axios.isAxiosError(reportsError) && reportsError.response?.status === 401);
 
@@ -186,7 +219,10 @@ export default function SellerPage() {
     return (
       <div className="min-h-screen bg-[#f4f4f4] text-zinc-900 flex flex-col items-center justify-center p-4 text-center">
         <h2 className="text-2xl font-bold text-red-500 mb-2">Ruxsat yo'q</h2>
-        <p className="text-zinc-500 mb-6">Sizda ushbu sahifani ko'rish uchun ruxsat yo'q yoki sessiya muddati tugagan.</p>
+        <p className="text-zinc-500 mb-6">
+          Sizda ushbu sahifani ko'rish uchun ruxsat yo'q yoki sessiya muddati
+          tugagan.
+        </p>
         <Button onClick={() => router.push("/")} className="bg-primary">
           Bosh sahifaga qaytish
         </Button>
@@ -202,15 +238,35 @@ export default function SellerPage() {
         <div>
           <h1 className="text-xl font-bold text-zinc-900">Sotuvchi</h1>
           <p className="text-[10px] text-zinc-500 font-medium">
-            {user?.firstName || user?.username} • {new Date().toLocaleDateString("uz-UZ")}
+            {user?.firstName || user?.username} •{" "}
+            {new Date().toLocaleDateString("uz-UZ")}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-auto">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-auto"
+          >
             <TabsList className="bg-zinc-100 border-zinc-200 h-9">
-              <TabsTrigger value="products" className="text-xs px-3 data-[state=active]:bg-white data-[state=active]:shadow-sm">Do&apos;kon</TabsTrigger>
-              <TabsTrigger value="sales" className="text-xs px-3 data-[state=active]:bg-white data-[state=active]:shadow-sm">Tarix</TabsTrigger>
-              <TabsTrigger value="reports" className="text-xs px-3 data-[state=active]:bg-white data-[state=active]:shadow-sm">Stat</TabsTrigger>
+              <TabsTrigger
+                value="products"
+                className="text-xs px-3 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+              >
+                Do&apos;kon
+              </TabsTrigger>
+              <TabsTrigger
+                value="sales"
+                className="text-xs px-3 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+              >
+                Tarix
+              </TabsTrigger>
+              <TabsTrigger
+                value="reports"
+                className="text-xs px-3 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+              >
+                Stat
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -278,25 +334,39 @@ export default function SellerPage() {
                         <div className="bg-zinc-50 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-zinc-300">
                           <ShoppingCart className="w-6 h-6" />
                         </div>
-                        <p className="text-sm text-zinc-400">Savat bo&apos;sh</p>
+                        <p className="text-sm text-zinc-400">
+                          Savat bo&apos;sh
+                        </p>
                       </div>
                     ) : (
                       <>
                         <div className="max-h-[50vh] overflow-y-auto divide-y divide-zinc-100">
                           {Object.values(cart).map((item) => (
-                            <div key={item.product._id} className="p-4 flex items-center gap-3">
+                            <div
+                              key={item.product._id}
+                              className="p-4 flex items-center gap-3"
+                            >
                               <div className="w-12 h-12 bg-zinc-100 rounded-lg overflow-hidden flex-shrink-0 relative">
                                 {item.product.image ? (
                                   // eslint-disable-next-line @next/next/no-img-element
-                                  <img src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" />
+                                  <img
+                                    src={item.product.image}
+                                    alt={item.product.name}
+                                    className="w-full h-full object-cover"
+                                  />
                                 ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-[10px] text-zinc-400">Rasm</div>
+                                  <div className="w-full h-full flex items-center justify-center text-[10px] text-zinc-400">
+                                    Rasm
+                                  </div>
                                 )}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h4 className="text-sm font-semibold text-zinc-900 truncate">{item.product.name}</h4>
+                                <h4 className="text-sm font-semibold text-zinc-900 truncate">
+                                  {item.product.name}
+                                </h4>
                                 <p className="text-xs text-primary font-bold">
-                                  {item.product.price.toLocaleString()} so&apos;m
+                                  {item.product.price.toLocaleString()}{" "}
+                                  so&apos;m
                                 </p>
                               </div>
                               <div className="flex items-center gap-2">
@@ -304,16 +374,22 @@ export default function SellerPage() {
                                   variant="outline"
                                   size="icon"
                                   className="h-7 w-7 rounded-full border-zinc-200"
-                                  onClick={() => updateCartQuantity(item.product._id, -1)}
+                                  onClick={() =>
+                                    updateCartQuantity(item.product._id, -1)
+                                  }
                                 >
                                   <Minus className="w-3 h-3" />
                                 </Button>
-                                <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
+                                <span className="text-sm font-bold w-4 text-center">
+                                  {item.quantity}
+                                </span>
                                 <Button
                                   variant="outline"
                                   size="icon"
                                   className="h-7 w-7 rounded-full border-zinc-200"
-                                  onClick={() => updateCartQuantity(item.product._id, 1)}
+                                  onClick={() =>
+                                    updateCartQuantity(item.product._id, 1)
+                                  }
                                 >
                                   <Plus className="w-3 h-3" />
                                 </Button>
@@ -324,7 +400,9 @@ export default function SellerPage() {
                         <div className="p-4 bg-zinc-50 rounded-b-xl border-t border-zinc-100 space-y-4">
                           <div className="flex justify-between items-end">
                             <span className="text-zinc-500 text-sm">Jami:</span>
-                            <span className="text-xl font-black text-zinc-900">{cartTotal.toLocaleString()} so&apos;m</span>
+                            <span className="text-xl font-black text-zinc-900">
+                              {cartTotal.toLocaleString()} so&apos;m
+                            </span>
                           </div>
 
                           {/* Desktopda sotish tugmasi (Telegram MainButton ham bor, lekin bu qulaylik uchun) */}
@@ -362,22 +440,32 @@ export default function SellerPage() {
                 </div>
               ) : (
                 sales.map((sale: Sale) => (
-                  <Card key={sale._id} className="bg-white border-zinc-200 text-zinc-900 overflow-hidden shadow-sm hover:border-primary/30 transition-colors">
+                  <Card
+                    key={sale._id}
+                    className="bg-white border-zinc-200 text-zinc-900 overflow-hidden shadow-sm hover:border-primary/30 transition-colors"
+                  >
                     <CardContent className="p-3">
                       <div className="flex justify-between items-start">
                         <div className="flex gap-3">
                           <div className="w-10 h-10 bg-zinc-100 rounded flex items-center justify-center text-xs font-bold text-zinc-400 border border-zinc-200 overflow-hidden">
                             {sale.product?.image ? (
                               // eslint-disable-next-line @next/next/no-img-element
-                              <img src={sale.product.image} alt={sale.product?.name} className="w-full h-full object-cover" />
-                            ) : sale.product?.name?.charAt(0)}
+                              <img
+                                src={sale.product.image}
+                                alt={sale.product?.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              sale.product?.name?.charAt(0)
+                            )}
                           </div>
                           <div>
                             <h3 className="font-semibold text-sm leading-tight text-zinc-900">
                               {sale.product?.name}
                             </h3>
                             <p className="text-[10px] text-zinc-500 mt-1 font-medium">
-                              {sale.quantity} ta x {(sale.price || 0).toLocaleString()} so&apos;m
+                              {sale.quantity} ta x{" "}
+                              {(sale.price || 0).toLocaleString()} so&apos;m
                             </p>
                           </div>
                         </div>
@@ -386,7 +474,10 @@ export default function SellerPage() {
                             {(sale.totalPrice || 0).toLocaleString()}
                           </p>
                           <span className="text-[9px] text-zinc-400 font-medium">
-                            {new Date(sale.createdAt).toLocaleTimeString("uz-UZ", { hour: '2-digit', minute: '2-digit' })}
+                            {new Date(sale.createdAt).toLocaleTimeString(
+                              "uz-UZ",
+                              { hour: "2-digit", minute: "2-digit" },
+                            )}
                           </span>
                         </div>
                       </div>
@@ -403,29 +494,48 @@ export default function SellerPage() {
                 <Card className="bg-white border-zinc-200 shadow-sm rounded-xl overflow-hidden">
                   <div className="h-2 bg-primary"></div>
                   <CardHeader className="p-5 pb-2">
-                    <CardTitle className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Bugungi daromad</CardTitle>
+                    <CardTitle className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                      Bugungi daromad
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="p-5 pt-0">
                     <p className="text-3xl font-black text-zinc-900">
-                      {(reports?.summary?.totalRevenue || 0).toLocaleString()} <span className="text-sm font-normal text-zinc-400">so&apos;m</span>
+                      {(reports?.summary?.totalRevenue || 0).toLocaleString()}{" "}
+                      <span className="text-sm font-normal text-zinc-400">
+                        so&apos;m
+                      </span>
                     </p>
                   </CardContent>
                 </Card>
                 <div className="grid grid-cols-2 gap-4">
                   <Card className="bg-white border-zinc-200 shadow-sm rounded-xl">
                     <CardHeader className="p-4 pb-1">
-                      <CardTitle className="text-[10px] font-bold text-zinc-400 uppercase">Sotuvlar</CardTitle>
+                      <CardTitle className="text-[10px] font-bold text-zinc-400 uppercase">
+                        Sotuvlar
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
-                      <p className="text-xl font-black text-zinc-900">{reports.summary.totalSales} <span className="text-xs font-normal text-zinc-400">ta</span></p>
+                      <p className="text-xl font-black text-zinc-900">
+                        {reports.summary.totalSales}{" "}
+                        <span className="text-xs font-normal text-zinc-400">
+                          ta
+                        </span>
+                      </p>
                     </CardContent>
                   </Card>
                   <Card className="bg-white border-zinc-200 shadow-sm rounded-xl">
                     <CardHeader className="p-4 pb-1">
-                      <CardTitle className="text-[10px] font-bold text-zinc-400 uppercase">Mahsulotlar</CardTitle>
+                      <CardTitle className="text-[10px] font-bold text-zinc-400 uppercase">
+                        Mahsulotlar
+                      </CardTitle>
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
-                      <p className="text-xl font-black text-zinc-900">{reports.summary.totalQuantity} <span className="text-xs font-normal text-zinc-400">ta</span></p>
+                      <p className="text-xl font-black text-zinc-900">
+                        {reports.summary.totalQuantity}{" "}
+                        <span className="text-xs font-normal text-zinc-400">
+                          ta
+                        </span>
+                      </p>
                     </CardContent>
                   </Card>
                 </div>
