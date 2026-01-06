@@ -68,9 +68,9 @@ export function SellerCard({ seller }: { seller: User }) {
                 <Phone className="h-3 w-3 mr-2" />
                 {seller.phoneNumber || "tel yo'q"}
               </p>
-              <p className="text-xs bg-secondary/50 inline-block px-2 py-0.5 rounded-full">
+              {/*<p className="text-xs bg-secondary/50 inline-block px-2 py-0.5 rounded-full">
                 Mahsulotlar: {seller.assignedProducts?.length || 0} ta
-              </p>
+              </p>*/}
             </div>
           </div>
         </div>

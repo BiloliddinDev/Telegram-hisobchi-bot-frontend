@@ -30,7 +30,7 @@ interface ProductFormValues {
   price: number;
   costPrice: number;
   category: string;
-  stock: number;
+  warehouseQuantity: number;
   sku: string;
   color: string;
 }
@@ -44,10 +44,10 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
       price: product.price,
       costPrice: product.costPrice,
       category: product.category._id,
-      stock: product.count,
+      warehouseQuantity: product.warehouseQuantity,
       sku: product.sku,
       color: product.color,
-    }
+    },
   });
 
   const { mutate: updateProduct, isPending } = useUpdateProduct();
@@ -62,26 +62,29 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
       price: data.price,
       costPrice: data.costPrice,
       category: data.category, // This is already a string (category ID)
-      count: data.stock, // Map stock to count
+      warehouseQuantity: data.warehouseQuantity, // Map stock to count
       sku: data.sku,
       color: data.color,
     };
 
-    updateProduct({ id: product._id, data: productData }, {
-      onSuccess: () => {
-        showToast("Mahsulot muvaffaqiyatli tahrirlandi", "success");
-        setOpen(false);
+    updateProduct(
+      { id: product._id, data: productData },
+      {
+        onSuccess: () => {
+          showToast("Mahsulot muvaffaqiyatli tahrirlandi", "success");
+          setOpen(false);
+        },
+        onError: (error: unknown) => {
+          let errorMessage = "Xatolik yuz berdi";
+          if (axios.isAxiosError<{ error: string }>(error)) {
+            errorMessage = error.response?.data?.error || error.message;
+          } else if (error instanceof Error) {
+            errorMessage = error.message;
+          }
+          showToast(errorMessage, "error");
+        },
       },
-      onError: (error: unknown) => {
-        let errorMessage = "Xatolik yuz berdi";
-        if (axios.isAxiosError<{ error: string }>(error)) {
-          errorMessage = error.response?.data?.error || error.message;
-        } else if (error instanceof Error) {
-          errorMessage = error.message;
-        }
-        showToast(errorMessage, "error");
-      }
-    });
+    );
   };
 
   return (
@@ -111,7 +114,10 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
                 <Input
                   id="edit-costPrice"
                   type="number"
-                  {...register("costPrice", { required: true, valueAsNumber: true })}
+                  {...register("costPrice", {
+                    required: true,
+                    valueAsNumber: true,
+                  })}
                 />
               </div>
               <div className="grid gap-2">
@@ -119,7 +125,10 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
                 <Input
                   id="edit-price"
                   type="number"
-                  {...register("price", { required: true, valueAsNumber: true })}
+                  {...register("price", {
+                    required: true,
+                    valueAsNumber: true,
+                  })}
                 />
               </div>
             </div>
@@ -142,17 +151,24 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
               >
                 <option value="">Tanlang...</option>
                 {categories.map((cat: Category) => (
-                  <option key={cat._id} value={cat._id}>{cat.name}</option>
+                  <option key={cat._id} value={cat._id}>
+                    {cat.name}
+                  </option>
                 ))}
-                {categories.length === 0 && <option value="general">Umumiy</option>}
+                {categories.length === 0 && (
+                  <option value="general">Umumiy</option>
+                )}
               </select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-stock">Ombordagi miqdor</Label>
+              <Label htmlFor="edit-warehouseQuantity">Ombordagi miqdor</Label>
               <Input
-                id="edit-stock"
+                id="edit-warehouseQuantity"
                 type="number"
-                {...register("stock", { required: true, valueAsNumber: true })}
+                {...register("warehouseQuantity", {
+                  required: true,
+                  valueAsNumber: true,
+                })}
               />
             </div>
           </div>
