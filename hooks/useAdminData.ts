@@ -20,9 +20,7 @@ export const useReports = (start: string, end: string) => {
       const params = new URLSearchParams();
       if (start) params.append("start", start);
       if (end) params.append("end", end);
-      const { data } = await api.get(
-        `/admin/reports/monthly?${params.toString()}`,
-      );
+      const { data } = await api.get(`/admin/reports?${params.toString()}`);
       console.log(data, "This is Filtered Report data");
       return data;
     },
