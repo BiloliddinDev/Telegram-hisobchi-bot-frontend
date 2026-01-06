@@ -3,8 +3,8 @@ import { Product } from "./products.type";
 
 export interface Transfer {
 	_id: string;
-	seller: User;
-	product: Product;
+	sellerId: User;
+	productId: Product;
 	quantity: number;
 	type: "transfer" | "return";
 	status: "completed" | "cancelled";
@@ -19,4 +19,19 @@ export interface CreateTransferData {
 		productId: string;
 		quantity: number;
 	}[];
+}
+
+export interface TransferItem {
+	productId: string;
+	quantity: number;
+}
+
+export interface CreateTransferPayload {
+	sellerId: string;
+	items: TransferItem[];
+}
+
+export interface BasketItem {
+	product: Product;
+	quantity: number;
 }

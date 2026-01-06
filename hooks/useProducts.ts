@@ -1,13 +1,26 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { Product, ProductCreateInput, ProductUpdateInput } from "@/interface/products.type";
+import {PaginatedResponse, Product, ProductCreateInput, ProductUpdateInput} from "@/interface/products.type";
 import { Category } from "@/interface/category.type";
 
-export const useProducts = () => {
-  return useQuery<Product[]>({
-    queryKey: ["products"],
+
+export const useProducts = (filters: {
+  name?: string;
+  category?: string;
+  page: number;
+  limit: number
+}) => {
+  return useQuery<PaginatedResponse<Product>>({
+    queryKey: ["products", filters],
     queryFn: async () => {
-      const { data } = await api.get("/products");
+      const { data } = await api.get("/products", {
+        params: {
+          search: filters.name || undefined,
+          category: filters.category === "all" ? undefined : filters.category,
+          page: filters.page,
+          limit: filters.limit,
+        },
+      });
       return data.products;
     },
   });
