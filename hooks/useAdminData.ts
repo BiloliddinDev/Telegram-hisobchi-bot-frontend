@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { User } from "@/interface/User.type";
 import { Report } from "@/interface/report.type";
+import {SellerStocksResponse} from "@/interface/seller-stock.type";
 
 export const useSellers = () => {
   return useQuery<User[]>({
@@ -101,3 +102,6 @@ export const useExportExcel = () => {
     },
   });
 };
+
+
+

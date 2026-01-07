@@ -32,23 +32,20 @@ export default function AdminSellers() {
         <CardContent>
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
             {sellersLoading
-              ? // 4 ta sotuvchi kartochkasi uchun skeletonlar
+              ? 
                 [...Array(4)].map((_, i) => (
                   <div
                     key={i}
                     className="flex flex-col space-y-3 p-4 border rounded-xl"
                   >
                     <div className="flex items-center space-x-4">
-                      {/* Avatar uchun aylana */}
                       <Skeleton className="h-12 w-12 rounded-full" />
                       <div className="space-y-2">
-                        {/* Ism va username uchun qatorlar */}
                         <Skeleton className="h-4 w-[150px]" />
                         <Skeleton className="h-4 w-[100px]" />
                       </div>
                     </div>
                     <div className="space-y-2 pt-2">
-                      {/* Pastki qo'shimcha ma'lumotlar uchun */}
                       <Skeleton className="h-4 w-full" />
                       <Skeleton className="h-4 w-[80%]" />
                     </div>

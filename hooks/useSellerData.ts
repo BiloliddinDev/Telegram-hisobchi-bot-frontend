@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { StockResponse } from "@/interface/seller-stock.type";
 import { Sale, CreateSalePayload } from "@/interface/sale.type";
+import {User} from "@/interface/User.type";
 
 export const useSellerStocks = () => {
   return useQuery<StockResponse>({
@@ -34,5 +35,17 @@ export const useProcessSale = () => {
       queryClient.invalidateQueries({ queryKey: ["seller-stocks"] });
       queryClient.invalidateQueries({ queryKey: ["seller-sales-history"] });
     },
+  });
+};
+
+
+export const useSellerDetail = (id: string) => {
+  return useQuery<{ seller: User }>({
+    queryKey: ["seller", id],
+    queryFn: async () => {
+      const { data } = await api.get(`/admin/sellers/${id}`);
+      return data;
+    },
+    enabled: !!id,
   });
 };

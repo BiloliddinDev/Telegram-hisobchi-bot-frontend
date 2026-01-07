@@ -17,3 +17,17 @@ export interface StockResponse {
     totalStockValue: number;
   };
 }
+
+export interface SellerStockDetail {
+  _id: string;
+  product: Product;
+  seller: string;
+  quantity: number;
+  lastTransferDate: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SellerStocksResponse {
+  sellerStocks: SellerStockDetail[];
+}
