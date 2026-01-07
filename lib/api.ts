@@ -116,11 +116,9 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  // Bu muhim: Agar backend-da cookie ishlatilsa ruxsat beradi
   withCredentials: true,
 });
 
-// Zapros yuborishdan oldin Telegram ID va InitData-ni headerga qo'shish
 api.interceptors.request.use(
   (config) => {
     const webApp = getTelegramData();
@@ -134,9 +132,7 @@ api.interceptors.request.use(
       config.headers["x-telegram-init-data"] = webApp.initData;
     }
 
-    // credentials: true frontendda allaqachon axios instance-da bor
 
-    // Debug logging (only in development or when debug is enabled)
     if (
       process.env.NODE_ENV === "development" ||
       process.env.NEXT_PUBLIC_DEBUG === "true"

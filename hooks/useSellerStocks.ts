@@ -19,6 +19,7 @@ export const useUpdateStock = () => {
   return useMutation({
     mutationFn: async ({
       stockId,
+        
       quantity,
     }: {
       stockId: string;
@@ -30,8 +31,22 @@ export const useUpdateStock = () => {
       return data;
     },
     onSuccess: () => {
-      // Ma'lumot yangilangandan keyin jadvalni qayta yuklash
       queryClient.invalidateQueries({ queryKey: ["sellerStocks"] });
+    },
+  });
+};
+
+export const useRemoveSellerStock = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (stockId: string) => {
+      const { data } = await api.delete(`/admin/seller-stocks/${stockId}`);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["seller-stocks"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     },
   });
 };

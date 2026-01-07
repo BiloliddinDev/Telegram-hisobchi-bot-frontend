@@ -784,7 +784,7 @@ export default function AdminReports() {
                     boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                   }}
                   formatter={(val: number) => [
-                    `${val.toLocaleString()} so'm`,
+                    `${val.toLocaleString()} $`,
                     "Summa",
                   ]}
                 />
@@ -823,7 +823,7 @@ export default function AdminReports() {
                   ))}
                 </Pie>
                 <RechartsTooltip
-                  formatter={(val: number) => `${val.toLocaleString()} so'm`}
+                  formatter={(val: number) => `${val.toLocaleString()} $`}
                 />
                 <Legend iconType="circle" />
               </PieChart>
@@ -832,90 +832,8 @@ export default function AdminReports() {
         </Card>
       </div>
 
-      {/* Sellers History */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between px-2">
-          <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 italic">
-            <History className="h-5 w-5" /> Sotuvchilar Tarixi va Qoldiqlari
-          </h3>
-          <div className="bg-blue-50 px-3 py-1 rounded-lg text-xs font-bold border border-blue-100">
-            {analytics?.sellers.length || 0} ta aktiv sotuvchi
-          </div>
-        </div>
-
-        <div className="grid gap-4">
-          {analytics?.sellers.map((seller: InventorySeller) => (
-            <Card
-              key={seller._id}
-              className="border border-gray-100 shadow-sm hover:border-blue-200 transition-all rounded-2xl overflow-hidden bg-white"
-            >
-              <Accordion type="single" collapsible>
-                <AccordionItem value={seller._id} className="border-none">
-                  <AccordionTrigger className="px-6 py-4 hover:no-underline group">
-                    <div className="flex justify-between items-center w-full pr-4 text-left">
-                      <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold shadow-blue-200 shadow-lg">
-                          {seller.firstName[0]}
-                          {seller.lastName[0]}
-                        </div>
-                        <div>
-                          <p className="font-bold text-gray-900 leading-none mb-1">
-                            {seller.firstName} {seller.lastName}
-                          </p>
-                          <p className="text-xs text-muted-foreground font-medium">
-                            @{seller.username}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right hidden sm:block">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                          {seller.productCount} Umumiy Mahsulotlar
-                        </p>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                          Balans
-                        </p>
-                        <p className="font-black text-blue-600 tabular-nums">
-                          {seller.totalValue.toLocaleString()} {"so'm"}
-                        </p>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-6 pb-6">
-                    <div className="rounded-2xl border border-gray-100 bg-gray-50/50 overflow-hidden shadow-inner mt-2">
-                      <Table>
-                        <TableHeader className="bg-gray-100/80">
-                          <TableRow className="hover:bg-transparent border-gray-200">
-                            <TableHead className="font-bold text-gray-600">
-                              Mahsulot
-                            </TableHead>
-                            <TableHead className="text-center font-bold text-gray-600">
-                              Soni
-                            </TableHead>
-                            <TableHead className="text-right font-bold text-gray-600">
-                              Qiymati
-                            </TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          <TableRow className="border-gray-100">
-                            <TableCell
-                              colSpan={3}
-                              className="text-center py-8 text-muted-foreground italic text-xs"
-                            >
-                              Hozircha faqat umumiy statistika mavjud.
-                              Detallashtirilgan API integratsiyasi kutilmoqda.
-                            </TableCell>
-                          </TableRow>
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </Card>
-          ))}
-        </div>
-      </div>
+     
+     
     </TabsContent>
   );
 }
@@ -933,7 +851,7 @@ interface StatItemProps {
 
 function StatItem({ title, value, icon, desc, isPrice, unit }: StatItemProps) {
   const formattedValue = isPrice
-    ? `${Number(value).toLocaleString()} so'm`
+    ? `${Number(value).toLocaleString()} $`
     : `${value} ${unit || ""}`;
 
   return (

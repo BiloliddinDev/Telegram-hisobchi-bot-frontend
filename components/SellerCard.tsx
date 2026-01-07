@@ -29,11 +29,10 @@ export function SellerCard({ seller }: { seller: User }) {
     `${seller.firstName?.[0] || ""}${seller.lastName?.[0] || ""}`.toUpperCase();
 
   return (
-    <Link href={`/admin/${seller._id}`} className="w-full" key={seller._id}>
       <Card className="overflow-hidden hover:shadow-md transition-shadow">
         <CardContent className="pt-6">
           <div className="flex items-start space-x-4">
-            <div className="relative h-16 w-16 flex-shrink-0">
+            <div className="relative h-16 w-16 flex-shrink-0 ">
               {seller.avatarUrl ? (
                 <Image
                   width={64}
@@ -54,7 +53,7 @@ export function SellerCard({ seller }: { seller: User }) {
               />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex justify-between items-start">
+              <Link href={`/admin/${seller._id}`} className="flex justify-between items-start">
                 <div>
                   <h3 className="font-bold text-lg truncate">
                     {seller.firstName} {seller.lastName}
@@ -65,7 +64,7 @@ export function SellerCard({ seller }: { seller: User }) {
                     </span>
                   </p>
                 </div>
-              </div>
+              </Link>
               <div className="mt-2 space-y-1">
                 <p className="text-sm text-muted-foreground flex items-center">
                   <Phone className="h-3 w-3 mr-2" />
@@ -92,6 +91,5 @@ export function SellerCard({ seller }: { seller: User }) {
           </Button>
         </CardFooter>
       </Card>
-    </Link>
   );
 }
