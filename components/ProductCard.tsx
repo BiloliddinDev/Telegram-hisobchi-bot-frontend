@@ -8,13 +8,19 @@ interface ProductCardProps {
   selectedCount?: number;
 }
 
-export function ProductCard({ product, onSelect, selectedCount }: ProductCardProps) {
-  const isOutOfStock = product.count <= 0;
+export function ProductCard({
+  product,
+  onSelect,
+  selectedCount,
+}: ProductCardProps) {
+  const isOutOfStock = product.warehouseQuantity <= 0;
 
   return (
     <Card
       className={`overflow-hidden cursor-pointer transition-all active:scale-95 ${
-        selectedCount ? "ring-2 ring-primary border-primary" : "hover:border-primary/50"
+        selectedCount
+          ? "ring-2 ring-primary border-primary"
+          : "hover:border-primary/50"
       } bg-white text-zinc-900 border-zinc-200 ${isOutOfStock ? "opacity-60 grayscale-[0.5] cursor-not-allowed active:scale-100" : ""}`}
       onClick={() => !isOutOfStock && onSelect?.(product)}
     >
@@ -51,8 +57,10 @@ export function ProductCard({ product, onSelect, selectedCount }: ProductCardPro
             <p className="text-primary font-bold text-base">
               {(product.price || 0).toLocaleString()} so&apos;m
             </p>
-            <p className={`text-[10px] ${isOutOfStock ? "text-red-500 font-bold" : "text-zinc-500"}`}>
-              Qoldiq: {product.count} ta
+            <p
+              className={`text-[10px] ${isOutOfStock ? "text-red-500 font-bold" : "text-zinc-500"}`}
+            >
+              Qoldiq: {product.warehouseQuantity} ta
             </p>
           </div>
           <span className="text-[10px] bg-zinc-100 px-2 py-1 rounded text-zinc-600 border border-zinc-200">

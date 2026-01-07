@@ -63,35 +63,34 @@ export function SellerCard({ seller }: { seller: User }) {
                   <span className="truncate">
                     @{seller.username || "username yo'q"}
                   </span>
-                 </p>
-               </div>
-             </div>
-             <div className="mt-2 space-y-1">
-               <p className="text-sm text-muted-foreground flex items-center">
-                 <Phone className="h-3 w-3 mr-2" />
-                 {seller.phoneNumber || "tel yo'q"}
-               </p>
-               <p className="text-xs bg-secondary/50 inline-block px-2 py-0.5 rounded-full">
-                 Mahsulotlar: {seller.assignedProducts?.length || 0} ta
-               </p>
-             </div>
-           </div>
-         </div>
-       </CardContent>
-       <CardFooter className="bg-muted/30 flex justify-end gap-2 p-2">
-         <EditSellerDialog seller={seller} />
-         <Button
-             variant="ghost"
-             size="sm"
-             className="text-destructive hover:text-destructive hover:bg-destructive/10"
-             onClick={handleDelete}
-             disabled={isDeleting}
-         >
-           <Trash2 className="h-4 w-4 mr-2" />
-           O'chirish
-         </Button>
-       </CardFooter>
-     </Card>
-   </Link>
+                </p>
+              </div>
+            </div>
+            <div className="mt-2 space-y-1">
+              <p className="text-sm text-muted-foreground flex items-center">
+                <Phone className="h-3 w-3 mr-2" />
+                {seller.phoneNumber || "tel yo'q"}
+              </p>
+              <p className="text-xs bg-secondary/50 inline-block px-2 py-0.5 rounded-full">
+                Mahsulotlar: {seller.assignedProducts?.length || 0} ta
+              </p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="bg-muted/30 flex justify-end gap-2 p-2">
+        <EditSellerDialog seller={seller} />
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+          onClick={handleDelete}
+          disabled={isDeleting}
+        >
+          <Trash2 className="h-4 w-4 mr-2" />
+          O'chirish
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }

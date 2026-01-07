@@ -1,21 +1,24 @@
 "use client";
 
 import { useTransfers } from "@/hooks/useTransfers";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-
 
 export function TransferHistoryTable() {
   const { data, isLoading } = useTransfers();
   // const { mutate: updateTransfer } = useUpdateTransfer();
   // const { mutate: returnTransfer } = useReturnTransfer();
 
-
   if (isLoading) return <div>Yuklanmoqda...</div>;
 
   const transfers = data?.transfers || [];
-
- 
 
   return (
     <div className="rounded-md border bg-background">
@@ -32,7 +35,10 @@ export function TransferHistoryTable() {
         <TableBody>
           {transfers.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+              <TableCell
+                colSpan={6}
+                className="text-center py-8 text-muted-foreground"
+              >
                 Hali transferlar yo&apos;q
               </TableCell>
             </TableRow>
@@ -47,19 +53,23 @@ export function TransferHistoryTable() {
                 </TableCell>
                 <TableCell>{transfer.productId?.name}</TableCell>
                 <TableCell>
-                    <span className="font-bold">{transfer.quantity} ta</span>
+                  <span className="font-bold">{transfer.quantity} ta</span>
                 </TableCell>
                 <TableCell>
-                  <Badge 
+                  <Badge
                     className={
-                      transfer.type === "return" 
-                        ? "bg-orange-500 hover:bg-orange-600" 
-                        : transfer.status === "cancelled" 
+                      transfer.type === "return"
+                        ? "bg-orange-500 hover:bg-orange-600"
+                        : transfer.status === "cancelled"
                           ? "bg-destructive/20 text-destructive border-destructive/20"
                           : "bg-green-600 hover:bg-green-700"
                     }
                   >
-                    {transfer.type === "transfer" ? (transfer.status === "cancelled" ? "Bekor qilingan" : "Biriktirilgan") : "Qaytarilgan"}
+                    {transfer.type === "transfer"
+                      ? transfer.status === "cancelled"
+                        ? "Bekor qilingan"
+                        : "Biriktirilgan"
+                      : "Qaytarilgan"}
                   </Badge>
                 </TableCell>
               </TableRow>
