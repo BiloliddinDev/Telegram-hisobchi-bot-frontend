@@ -1,4 +1,4 @@
-import { Category } from "./category.type";
+import { Category } from "@/interface/category.type";
 
 export interface Product {
   _id: string;
@@ -12,21 +12,8 @@ export interface Product {
   warehouseQuantity: number;
   image: string;
   isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface PaginatedResponse<T> {
-  docs: T[];
-  totalDocs: number;
-  limit: number;
-  totalPages: number;
-  page: number;
-  pagingCounter: number;
-  hasPrevPage: boolean;
-  hasNextPage: boolean;
-  prevPage: number | null;
-  nextPage: number | null;
+  createdAt: Date;
+  updatedAt: Date | null;
 }
 
 export interface ProductCreateInput {

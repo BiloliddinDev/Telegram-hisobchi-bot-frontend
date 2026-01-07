@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { CreateSaleData } from "@/interface/sale.type";
+import { CreateSalePayload } from "@/interface/sale.type";
 
 export const useSellerSales = () => {
   return useQuery({
@@ -15,7 +15,7 @@ export const useSellerSales = () => {
 export const useCreateSale = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (saleData: CreateSaleData) => {
+    mutationFn: async (saleData: CreateSalePayload) => {
       const { data } = await api.post("/sales", saleData);
       return data;
     },

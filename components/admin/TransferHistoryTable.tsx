@@ -49,9 +49,9 @@ export function TransferHistoryTable() {
                   {new Date(transfer.createdAt).toLocaleDateString("uz-UZ")}
                 </TableCell>
                 <TableCell className="font-medium">
-                  {transfer.sellerId?.firstName} {transfer.sellerId?.lastName}
+                  {transfer.seller?.firstName} {transfer.seller?.lastName}
                 </TableCell>
-                <TableCell>{transfer.productId?.name}</TableCell>
+                <TableCell>{transfer.product?.name}</TableCell>
                 <TableCell>
                   <span className="font-bold">{transfer.quantity} ta</span>
                 </TableCell>

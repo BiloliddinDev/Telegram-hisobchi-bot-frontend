@@ -33,26 +33,29 @@ export function AssignProductDialog({ product }: { product: Product }) {
   const { showToast } = useToast();
 
   const onSubmit = (data: AssignFormValues) => {
-    assignProduct({
-      productId: product._id,
-      sellerId: data.sellerId,
-      quantity: data.quantity
-    }, {
-      onSuccess: () => {
-        showToast("Mahsulot muvaffaqiyatli biriktirildi", "success");
-        setOpen(false);
-        reset();
+    assignProduct(
+      {
+        productId: product._id,
+        sellerId: data.sellerId,
+        quantity: data.quantity,
       },
-      onError: (error: unknown) => {
-        let errorMessage = "Xatolik yuz berdi";
-        if (axios.isAxiosError<{ error: string }>(error)) {
-          errorMessage = error.response?.data?.error || error.message;
-        } else if (error instanceof Error) {
-          errorMessage = error.message;
-        }
-        showToast(errorMessage, "error");
-      }
-    });
+      {
+        onSuccess: () => {
+          showToast("Mahsulot muvaffaqiyatli biriktirildi", "success");
+          setOpen(false);
+          reset();
+        },
+        onError: (error: unknown) => {
+          let errorMessage = "Xatolik yuz berdi";
+          if (axios.isAxiosError<{ error: string }>(error)) {
+            errorMessage = error.response?.data?.error || error.message;
+          } else if (error instanceof Error) {
+            errorMessage = error.message;
+          }
+          showToast(errorMessage, "error");
+        },
+      },
+    );
   };
 
   return (
@@ -90,10 +93,15 @@ export function AssignProductDialog({ product }: { product: Product }) {
                 id="quantity"
                 type="number"
                 min="1"
-                max={product.count}
-                {...register("quantity", { required: true, valueAsNumber: true })}
+                max={product.warehouseQuantity}
+                {...register("quantity", {
+                  required: true,
+                  valueAsNumber: true,
+                })}
               />
-              <p className="text-xs text-muted-foreground">Max: {product.count}</p>
+              <p className="text-xs text-muted-foreground">
+                Max: {product.warehouseQuantity}
+              </p>
             </div>
           </div>
           <DialogFooter>

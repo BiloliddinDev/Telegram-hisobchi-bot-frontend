@@ -20,9 +20,10 @@ import { AxiosError } from "axios";
 
 interface SaleFormValues {
   quantity: number;
-  customerName?: string;
-  customerPhone?: string;
+  customerName: string;
+  customerPhone: string;
   price: number;
+  notes?: string;
 }
 
 interface Product {
@@ -35,27 +36,33 @@ export function CreateSaleDialog({ product }: { product: Product }) {
   const [open, setOpen] = useState(false);
   const { register, handleSubmit, reset } = useForm<SaleFormValues>({
     defaultValues: {
-      price: product.price
-    }
+      price: product.price,
+    },
   });
   const { mutate: createSale, isPending } = useCreateSale();
   const { showToast } = useToast();
 
   const onSubmit = (data: SaleFormValues) => {
-    createSale({ 
-      productId: product._id, 
-      ...data 
-    }, {
-      onSuccess: () => {
-        showToast("Savdo muvaffaqiyatli amalga oshirildi", "success");
-        setOpen(false);
-        reset();
+    createSale(
+      {
+        productId: product._id,
+        ...data,
       },
-      onError: (error: unknown) => {
-        const axiosError = error as AxiosError<{ error: string }>;
-        showToast(axiosError.response?.data?.error || "Xatolik yuz berdi", "error");
-      }
-    });
+      {
+        onSuccess: () => {
+          showToast("Savdo muvaffaqiyatli amalga oshirildi", "success");
+          setOpen(false);
+          reset();
+        },
+        onError: (error: unknown) => {
+          const axiosError = error as AxiosError<{ error: string }>;
+          showToast(
+            axiosError.response?.data?.error || "Xatolik yuz berdi",
+            "error",
+          );
+        },
+      },
+    );
   };
 
   return (
@@ -76,7 +83,10 @@ export function CreateSaleDialog({ product }: { product: Product }) {
                 id="quantity"
                 type="number"
                 min="1"
-                {...register("quantity", { required: true, valueAsNumber: true })}
+                {...register("quantity", {
+                  required: true,
+                  valueAsNumber: true,
+                })}
               />
             </div>
             <div className="grid gap-2">

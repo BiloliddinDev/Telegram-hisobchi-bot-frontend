@@ -1,14 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
-import {PaginatedResponse, Product, ProductCreateInput, ProductUpdateInput} from "@/interface/products.type";
+import { PaginatedResponse } from "@/interface/pagination.type";
+import {
+  Product,
+  ProductCreateInput,
+  ProductUpdateInput,
+} from "@/interface/products.type";
 import { Category } from "@/interface/category.type";
-
 
 export const useProducts = (filters: {
   name?: string;
   category?: string;
   page: number;
-  limit: number
+  limit: number;
 }) => {
   return useQuery<PaginatedResponse<Product>>({
     queryKey: ["products", filters],
@@ -42,7 +46,13 @@ export const useCreateProduct = () => {
 export const useUpdateProduct = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: ProductUpdateInput }) => {
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: ProductUpdateInput;
+    }) => {
       const response = await api.put(`/products/${id}`, data);
       return response.data;
     },
