@@ -347,53 +347,41 @@ export default function SellerPage() {
             {salesLoading ? (
               <HistorySkeleton />
             ) : (
-              <div className="bg-white border border-gray-200 rounded-sm overflow-hidden">
-                <table className="w-full text-sm text-left">
-                  <thead className="bg-gray-50 text-gray-500 font-bold text-[10px] uppercase border-b">
+                <div className="bg-white border border-gray-200 rounded-sm overflow-hidden overflow-x-auto">
+                  <table className="w-full text-sm text-left min-w-[600px]">
+                    {/* min-w-[600px] jadvalni kichik ekranlarda siqilib ketishidan saqlaydi va scroll chiqaradi */}
+                    <thead className="bg-gray-50 text-gray-500 font-bold text-[10px] uppercase border-b">
                     <tr>
-                      <th className="px-4 py-3">Mahsulot nomi</th>
-                      <th className="px-4 py-3">{`Mijoz ma'lumotlari`}</th>
-                      <th className="px-4 py-3 text-center">Miqdor</th>
-                      <th className="px-4 py-3 text-right">Umumiy summa</th>
-                      <th className="px-4 py-3 text-right">Sana / Vaqt</th>
+                      <th className="px-4 py-3 whitespace-nowrap">Mahsulot nomi</th>
+                      <th className="px-4 py-3 whitespace-nowrap">{`Mijoz ma'lumotlari`}</th>
+                      <th className="px-4 py-3 text-center whitespace-nowrap">Miqdor</th>
+                      <th className="px-4 py-3 text-right whitespace-nowrap">Umumiy summa</th>
+                      <th className="px-4 py-3 text-right whitespace-nowrap">Sana / Vaqt</th>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
                     {salesData?.map((sale: Sale) => (
-                      <tr
-                        key={sale._id}
-                        className="hover:bg-gray-50/50 transition-colors"
-                      >
-                        <td className="px-4 py-4 font-bold text-gray-900 uppercase text-[11px]">
-                          {sale.product.name}
-                        </td>
-                        <td className="px-4 py-4">
-                          <p className="font-bold text-gray-700">
-                            {sale.customerName}
-                          </p>
-                          <p className="text-[10px] text-gray-400 font-medium italic">
-                            {sale.customerPhone}
-                          </p>
-                        </td>
-                        <td className="px-4 py-4 text-center font-bold">
-                          {sale.quantity} ta
-                        </td>
-                        <td className="px-4 py-4 text-right font-black text-primary">
-                          {sale.totalAmount.toLocaleString()}
-                          {`so'm`}
-                        </td>
-                        <td className="px-4 py-4 text-right text-gray-400 text-[10px] font-bold">
-                          {new Date(sale.timestamp).toLocaleDateString()} <br />
-                          {new Date(sale.timestamp).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </td>
-                      </tr>
+                        <tr key={sale._id} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-4 py-4 font-bold text-gray-900 uppercase text-[11px] whitespace-nowrap">
+                            {sale.product.name}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            <p className="font-bold text-gray-700">{sale.customerName}</p>
+                            <p className="text-[10px] text-gray-400 font-medium italic">{sale.customerPhone}</p>
+                          </td>
+                          <td className="px-4 py-4 text-center font-bold">{sale.quantity} ta</td>
+                          <td className="px-4 py-4 text-right font-black text-primary whitespace-nowrap">
+                            {sale.totalAmount.toLocaleString()} {`so'm`}
+                          </td>
+                          <td className="px-4 py-4 text-right text-gray-400 text-[10px] font-bold whitespace-nowrap">
+                            {new Date(sale.timestamp).toLocaleDateString()} <br />
+                            {new Date(sale.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </td>
+                        </tr>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                    </tbody>
+                  </table>
+                </div>
             )}
           </TabsContent>
         </Tabs>
