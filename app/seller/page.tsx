@@ -222,7 +222,7 @@ export default function SellerPage() {
                                 Narxi:
                               </p>
                               <p className="font-bold text-primary">
-                                {stock.product.price.toLocaleString()} {`so'm`}
+                                {stock.product.price.toLocaleString()} {"$"}
                               </p>
                             </div>
                             <Badge

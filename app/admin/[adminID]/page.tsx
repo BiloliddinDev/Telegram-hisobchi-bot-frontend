@@ -246,7 +246,7 @@ export default function AdminSellerDetailPage() {
                 value="inventory"
                 className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-bold text-[11px] uppercase tracking-wider gap-2 rounded-sm"
             >
-              <Package size={14} className="text-primary" /> Inventar
+              <Package size={14} className="text-primary" /> Maxsulotlar
             </TabsTrigger>
             <TabsTrigger
                 value="returns"
