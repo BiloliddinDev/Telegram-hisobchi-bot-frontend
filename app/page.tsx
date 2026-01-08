@@ -98,7 +98,7 @@ export default function Home() {
   if (initError || error) {
     console.log("Rendering error state:", initError || error);
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background p-4">
+      <div className="flex items-center justify-center min-h-screen mt-10 bg-background p-4">
         <div className="text-center max-w-md">
           <div className="mb-4">
             <svg

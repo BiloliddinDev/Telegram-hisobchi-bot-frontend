@@ -64,3 +64,32 @@ export interface ActiveAssignedStocksWithSummaryResponse {
 export interface ActiveAssignedStocksResponse {
   sellerStocks: ProductStockItem[];
 }
+
+
+export interface SaleRecord {
+  _id: string;
+  seller: string;
+  product: string; // Agar backend populate qilmasa string keladi
+  quantity: number;
+  price: number;
+  totalAmount: number;
+  customerName: string;
+  customerPhone: string;
+  timestamp: string;
+  createdAt: string;
+}
+
+export interface Seller {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  username: string;
+  phoneNumber: string;
+  role: string;
+  isActive: boolean;
+}
+
+export interface SellerDetailResponse {
+  seller: Seller;
+  sales: SaleRecord[]; // Mana o'sha tarix ro'yxati
+}

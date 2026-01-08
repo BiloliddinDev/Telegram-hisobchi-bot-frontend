@@ -21,7 +21,7 @@ export const useCreateSale = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["seller-sales"] });
-      queryClient.invalidateQueries({ queryKey: ["me"] }); // User's assigned products might change
+      queryClient.invalidateQueries({ queryKey: ["me"] }); 
     },
   });
 };

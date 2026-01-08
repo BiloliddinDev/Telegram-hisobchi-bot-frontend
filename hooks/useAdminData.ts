@@ -95,10 +95,10 @@ export const useAssignProduct = () => {
 export const useExportExcel = () => {
   return useMutation({
     mutationFn: async () => {
-      const response = await api.get("/admin/export-excel", {
-        responseType: "blob",
+      const { data } = await api.get('/export/database?format=xlsx&download=true', {
+        responseType: 'blob',
       });
-      return response.data;
+      return data;
     },
   });
 };

@@ -117,7 +117,6 @@ export default function SellerPage() {
 
   const handleFinalSubmit = async () => {
     try {
-      // Promise.all orqali barcha sotuvlarni parallel yuboramiz (tezroq bo'ladi)
       await Promise.all(
         Object.values(cart).map((item) =>
           processSale({

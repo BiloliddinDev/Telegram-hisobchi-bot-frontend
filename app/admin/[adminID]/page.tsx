@@ -34,7 +34,7 @@ import {
   Trash2,
   AlertTriangle,
 } from "lucide-react";
-import { useSellerDetail } from "@/hooks/useSellerData";
+import {useSellerDetail, useSellerDetailHistory} from "@/hooks/useSellerData";
 import {
   useRemoveSellerStock,
   useSellerStocks,
@@ -63,6 +63,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { History } from "lucide-react";
 
 export default function AdminSellerDetailPage() {
   const router = useRouter();
@@ -77,6 +78,16 @@ export default function AdminSellerDetailPage() {
     null,
   );
 
+  interface SaleRecord {
+    _id: string;
+    customerName: string;
+    customerPhone: string;
+    product: string; // Agar backenddan mahsulot ID-si kelsa
+    quantity: number;
+    totalAmount: number;
+    timestamp: string | Date;
+  }
+  
   const { data: stocksData, isLoading: stocksLoading } =
     useSellerStocks(sellerId);
   const { mutate: updateStock, isPending: isSaving } = useUpdateStock();
@@ -84,11 +95,18 @@ export default function AdminSellerDetailPage() {
   const {
     data: sellerData,
     isLoading: sellerLoading,
-    isError,
   } = useSellerDetail(sellerId);
+  
+  
+  const {
+    data: sellerDataHistory,
+    isLoading: sellerHistoryLoading,
+    
+  } = useSellerDetailHistory(sellerId);
 
   const seller = sellerData?.seller;
   const stocks = stocksData?.sellerStocks || [];
+  const salesHistory = sellerDataHistory?.sales || [];
 
   const filteredStocks = stocks.filter((s) =>
     s.product.name.toLowerCase().includes(search.toLowerCase()),
@@ -154,7 +172,7 @@ export default function AdminSellerDetailPage() {
     });
   };
 
-  if (sellerLoading || stocksLoading) {
+  if (sellerLoading || stocksLoading || sellerHistoryLoading) {
     return (
       <div className="flex flex-col gap-6 p-6 animate-pulse">
         <div className="flex items-center gap-4">
@@ -170,7 +188,7 @@ export default function AdminSellerDetailPage() {
     );
   }
 
-  if (isError || !seller) {
+  if (!seller) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <p className="text-sm font-bold text-slate-500 uppercase">{`Sotuvchi ma'lumotlarini yuklab bo'lmadi`}</p>
@@ -222,20 +240,26 @@ export default function AdminSellerDetailPage() {
       </div>
 
       <Tabs defaultValue="inventory" className="w-full">
-        <div className="bg-white p-2 border rounded-sm shadow-sm mb-6">
-          <TabsList className="grid w-full grid-cols-2 sm:w-[400px] h-10 bg-slate-100 p-1 rounded-sm">
+        <div className="bg-white p-2 border rounded-sm shadow-sm mb-6 overflow-x-auto">
+          <TabsList className="grid w-full grid-cols-3 sm:w-[600px] h-10 bg-slate-100 p-1 rounded-sm">
             <TabsTrigger
-              value="inventory"
-              className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-bold text-[11px] uppercase tracking-wider gap-2 rounded-sm"
+                value="inventory"
+                className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-bold text-[11px] uppercase tracking-wider gap-2 rounded-sm"
             >
               <Package size={14} className="text-primary" /> Inventar
             </TabsTrigger>
             <TabsTrigger
-              value="returns"
-              className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-bold text-[11px] uppercase tracking-wider gap-2 rounded-sm"
+                value="returns"
+                className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-bold text-[11px] uppercase tracking-wider gap-2 rounded-sm"
             >
-              <ArrowLeftRight size={14} className="text-primary" /> Zaxirani
-              qaytarish
+              <ArrowLeftRight size={14} className="text-primary" /> Qaytarish
+            </TabsTrigger>
+            {/* YANGI TAB */}
+            <TabsTrigger
+                value="history"
+                className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-bold text-[11px] uppercase tracking-wider gap-2 rounded-sm"
+            >
+              <History size={14} className="text-primary" /> Sotuvlar tarixi
             </TabsTrigger>
           </TabsList>
         </div>
@@ -411,6 +435,71 @@ export default function AdminSellerDetailPage() {
                       </TableCell>
                     </TableRow>
                   ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+
+        {/*{`3 qisim da korinsh kerke `}*/}
+        <TabsContent value="history" className="mt-0 outline-none">
+          <Card className="rounded-sm border-slate-200 shadow-none overflow-hidden">
+            <CardHeader className="bg-slate-50/50 border-b">
+              <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+                <div>
+                  <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-800">Sotilgan mahsulotlar tarixi</CardTitle>
+                  <CardDescription className="text-[10px] font-bold text-slate-400 uppercase mt-1">Sotuvchi tomonidan amalga oshirilgan barcha tranzaksiyalar</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader className="bg-slate-50/80">
+                  <TableRow>
+                    <TableHead className="text-[10px] font-black uppercase py-4 px-6">Mijoz / Sana</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase py-4 px-6">Mahsulot</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase py-4 px-6 text-center">Soni</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase py-4 px-6 text-right">Jami summa</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {salesHistory.length > 0 ? (
+                      salesHistory.map((sale: SaleRecord) => (
+                          <TableRow key={sale._id} className="hover:bg-slate-50/50">
+                            <TableCell className="px-6 py-4">
+                              <p className="text-xs font-black uppercase text-slate-800">
+                                {sale.customerName || "Noma'lum mijoz"}
+                              </p>
+                              <p className="text-[9px] font-bold text-slate-400">
+                                {new Date(sale.timestamp).toLocaleString("uz-UZ")}
+                              </p>
+                            </TableCell>
+                            <TableCell className="px-6 py-4">
+                              <p className="text-[10px] font-bold text-slate-600 uppercase">
+                                ID: ...{sale.product.slice(-6)}
+                              </p>
+                              <p className="text-[9px] text-slate-400">{sale.customerPhone}</p>
+                            </TableCell>
+                            <TableCell className="px-6 py-4 text-center">
+                              <Badge variant="outline" className="font-black text-xs">
+                                {sale.quantity} ta
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="px-6 py-4 text-right">
+                              <p className="text-xs font-black text-green-600">
+                                + {sale.totalAmount.toLocaleString()} $
+                              </p>
+                            </TableCell>
+                          </TableRow>
+                      ))
+                  ) : (
+                      <TableRow>
+                        <TableCell colSpan={4} className="h-32 text-center text-[10px] font-bold uppercase text-slate-400">
+                          Hozircha sotuvlar mavjud emas
+                        </TableCell>
+                      </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </CardContent>

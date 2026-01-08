@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { ActiveAssignedStocksWithSummaryResponse } from "@/interface/seller-stock.type";
+import {ActiveAssignedStocksWithSummaryResponse, SellerDetailResponse} from "@/interface/seller-stock.type";
 import { Sale, CreateSalePayload } from "@/interface/sale.type";
 import { User } from "@/interface/User.type";
 
@@ -46,5 +46,18 @@ export const useSellerDetail = (id: string) => {
       return data;
     },
     enabled: !!id,
+  });
+};
+
+
+
+export const useSellerDetailHistory = (sellerId: string) => {
+  return useQuery({
+    queryKey: ["seller-detail", sellerId],
+    queryFn: async () => {
+      const { data } = await api.get<SellerDetailResponse>(`/sellers/${sellerId}/sales`);
+      return data;
+    },
+    enabled: !!sellerId, 
   });
 };
