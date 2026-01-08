@@ -33,7 +33,7 @@ export default function AdminPage() {
   }, [user, router]);
 
   return (
-    <div className="min-h-screen bg-background p-4 mt-10">
+    <div className="min-h-screen bg-background p-4 mt-20">
       <ToastComponent />
       <div className="max-w-7xl mx-auto">
         <div className="mb-6 flex justify-between items-end">
