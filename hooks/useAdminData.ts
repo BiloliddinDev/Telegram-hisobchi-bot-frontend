@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { User } from "@/interface/User.type";
 import { Report } from "@/interface/report.type";
-import {SellerStocksResponse} from "@/interface/seller-stock.type";
+import { ActiveAssignedStocksResponse } from "@/interface/seller-stock.type";
 
 export const useSellers = () => {
   return useQuery<User[]>({
@@ -103,5 +103,13 @@ export const useExportExcel = () => {
   });
 };
 
-
-
+export const useSellerStocks = (sellerId: string) => {
+  return useQuery<ActiveAssignedStocksResponse>({
+    queryKey: ["seller-stocks", sellerId],
+    queryFn: async () => {
+      const { data } = await api.get(`/admin/sellers/${sellerId}/stocks`);
+      return data;
+    },
+    enabled: !!sellerId,
+  });
+};

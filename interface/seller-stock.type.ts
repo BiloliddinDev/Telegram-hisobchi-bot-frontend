@@ -31,3 +31,36 @@ export interface SellerStockDetail {
 export interface SellerStocksResponse {
   sellerStocks: SellerStockDetail[];
 }
+
+export interface Stock {
+  _id: string;
+  quantity: number;
+  lastTransferDate?: string;
+  updatedAt?: string;
+  createdAt?: string;
+}
+
+// New interface for detailed stock with product assignment info
+export interface ProductStockItem {
+  sellerProductId: string;
+  product: Product;
+  assignment: {
+    isActive: boolean;
+    assignAt: string;
+    unassignAt?: string;
+  };
+  stock: Stock;
+}
+
+export interface ActiveAssignedStocksWithSummaryResponse {
+  sellerStocks: ProductStockItem[];
+  summary: {
+    totalProducts: number;
+    totalQuantity: number;
+    totalStockValue: number;
+  };
+}
+
+export interface ActiveAssignedStocksResponse {
+  sellerStocks: ProductStockItem[];
+}

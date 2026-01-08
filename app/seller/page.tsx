@@ -22,7 +22,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Sale } from "@/interface/sale.type";
-import { SellerStock } from "@/interface/seller-stock.type";
+import { ProductStockItem } from "@/interface/seller-stock.type";
 import {
   StockSkeleton,
   HistorySkeleton,
@@ -50,13 +50,13 @@ export default function SellerPage() {
   const { mutateAsync: processSale, isPending: isSelling } = useProcessSale();
 
   const [cart, setCart] = useState<
-    Record<string, { stock: SellerStock; qty: number; price: number }>
+    Record<string, { stock: ProductStockItem; qty: number; price: number }>
   >({});
   const [customer, setCustomer] = useState({ name: "", phone: "", notes: "" });
 
   const filteredStocks = useMemo(
     () =>
-      stockData?.stocks.filter(
+      stockData?.sellerStocks.filter(
         (s) =>
           s.product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           s.product.sku?.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -64,11 +64,11 @@ export default function SellerPage() {
     [stockData, searchTerm],
   );
 
-  const handleAddToCart = (stock: SellerStock) => {
+  const handleAddToCart = (stock: ProductStockItem) => {
     const current = cart[stock.product._id];
     const currentQty = current?.qty || 0;
 
-    if (currentQty >= stock.quantity) {
+    if (currentQty >= stock.stock.quantity) {
       showToast("Ombordagi miqdordan ko'p sotib bo'lmaydi", "error");
       return;
     }
@@ -93,7 +93,7 @@ export default function SellerPage() {
         delete newState[id];
         return newState;
       }
-      if (newQty > item.stock.quantity) return prev;
+      if (newQty > item.stock.stock.quantity) return prev;
       return { ...prev, [id]: { ...item, qty: newQty } };
     });
   };
@@ -200,9 +200,9 @@ export default function SellerPage() {
                   <StockSkeleton />
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    {filteredStocks.map((stock: SellerStock) => (
+                    {filteredStocks.map((stock: ProductStockItem) => (
                       <Card
-                        key={stock._id}
+                        key={stock.stock._id}
                         onClick={() => handleAddToCart(stock)}
                         className="cursor-pointer hover:border-primary transition-colors border-gray-200 shadow-none rounded-sm"
                       >
@@ -230,7 +230,7 @@ export default function SellerPage() {
                               variant="secondary"
                               className="text-[10px] font-bold bg-gray-100"
                             >
-                              {stock.quantity} ta mavjud
+                              {stock.stock.quantity} ta mavjud
                             </Badge>
                           </div>
                         </CardContent>
@@ -253,7 +253,10 @@ export default function SellerPage() {
                         <div className="p-10 text-center text-gray-400 text-xs font-medium">{`Savat bo'sh`}</div>
                       ) : (
                         Object.values(cart).map((item) => (
-                          <div key={item.stock._id} className="p-3 space-y-3">
+                          <div
+                            key={item.stock.stock._id}
+                            className="p-3 space-y-3"
+                          >
                             <div className="flex justify-between">
                               <p className="text-[11px] font-bold line-clamp-1 flex-1 uppercase">
                                 {item.stock.product.name}

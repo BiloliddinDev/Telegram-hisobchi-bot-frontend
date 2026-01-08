@@ -473,7 +473,6 @@ import {
   TrendingUp,
   ShoppingCart,
   Calendar,
-  History,
   Award,
   BarChart3,
   CircleDot,
@@ -490,20 +489,6 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import {
   BarChart,
   Bar,
@@ -831,9 +816,6 @@ export default function AdminReports() {
           </CardContent>
         </Card>
       </div>
-
-     
-     
     </TabsContent>
   );
 }

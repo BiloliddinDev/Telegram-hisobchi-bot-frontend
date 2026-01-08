@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { SellerStocksResponse } from "@/interface/seller-stock.type";
+import { ActiveAssignedStocksResponse } from "@/interface/seller-stock.type";
 import api from "@/lib/api";
 
 export const useSellerStocks = (sellerId: string) => {
-  return useQuery<SellerStocksResponse>({
+  return useQuery<ActiveAssignedStocksResponse>({
     queryKey: ["sellerStocks", sellerId],
     queryFn: async () => {
       const { data } = await api.get(`/admin/sellers/${sellerId}/stocks`);
@@ -19,7 +19,7 @@ export const useUpdateStock = () => {
   return useMutation({
     mutationFn: async ({
       stockId,
-        
+
       quantity,
     }: {
       stockId: string;
@@ -41,7 +41,9 @@ export const useRemoveSellerStock = () => {
 
   return useMutation({
     mutationFn: async (stockId: string) => {
-      const { data } = await api.delete(`/admin/seller-stocks/${stockId}`);
+      const { data } = await api.delete(
+        `/admin/seller-stocks/${stockId}?unassign=true`,
+      );
       return data;
     },
     onSuccess: () => {
