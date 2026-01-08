@@ -47,7 +47,7 @@ export const useRemoveSellerStock = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["seller-stocks"] });
+      queryClient.invalidateQueries({ queryKey: ["sellerStocks"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
     },
   });

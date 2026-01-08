@@ -46,7 +46,7 @@ export function TransferHistoryTable() {
             transfers.map((transfer) => (
               <TableRow key={transfer._id}>
                 <TableCell className="text-xs">
-                  {new Date(transfer.createdAt).toLocaleDateString("uz-UZ")}
+                  <p className={"w-[70px]"}>{new Date(transfer.createdAt).toLocaleDateString("uz-UZ")}</p>
                 </TableCell>
                 <TableCell className="font-medium">
                   {transfer.seller?.firstName} {transfer.seller?.lastName}

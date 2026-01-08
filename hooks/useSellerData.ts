@@ -55,7 +55,7 @@ export const useSellerDetailHistory = (sellerId: string) => {
   return useQuery({
     queryKey: ["seller-detail", sellerId],
     queryFn: async () => {
-      const { data } = await api.get<SellerDetailResponse>(`/sellers/${sellerId}/sales`);
+      const { data } = await api.get<SellerDetailResponse>(`/admin/sellers/${sellerId}/sales`);
       return data;
     },
     enabled: !!sellerId, 

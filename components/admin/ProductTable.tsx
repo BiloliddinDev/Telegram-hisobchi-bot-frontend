@@ -46,6 +46,9 @@ export function ProductTable({ products }: ProductTableProps) {
               <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">
                 Kategoriya
               </th>
+              <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">
+                Rangi
+              </th>
               <th className="h-10 px-4 text-right align-middle font-medium text-muted-foreground">
                 Tan narxi
               </th>
@@ -74,13 +77,9 @@ export function ProductTable({ products }: ProductTableProps) {
                 </td>
                 <td className="p-4 align-middle">
                   <div className="font-medium">{product.name}</div>
-                  {product.color && (
-                    <div className="text-xs text-muted-foreground">
-                      Rang: {product.color}
-                    </div>
-                  )}
                 </td>
                 <td className="p-4 align-middle">{product.category.name}</td>
+                <td className="p-4 align-middle">{product.color}</td>
                 <td className="p-4 align-middle text-right">
                   {"$" + (product.costPrice || 0).toLocaleString()}
                 </td>

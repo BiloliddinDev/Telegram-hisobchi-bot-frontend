@@ -33,7 +33,7 @@ export default function AdminPage() {
   }, [user, router]);
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-4 mt-10">
       <ToastComponent />
       <div className="max-w-7xl mx-auto">
         <div className="mb-6 flex justify-between items-end">
@@ -54,7 +54,7 @@ export default function AdminPage() {
           <TabsContent value="assign" className="mt-4 space-y-8">
             <Card>
               <CardHeader>
-                <CardTitle>Mahsulotlarni taqsimlash (Stock Transfer)</CardTitle>
+                <CardTitle>Mahsulotlarni taqsimlash</CardTitle>
                 <CardDescription>
                   Ombordan sotuvchilarga mahsulot biriktirish
                 </CardDescription>

@@ -138,7 +138,7 @@ export default function TabsProducts() {
                         onClick={() => setPage((p) => Math.max(1, p - 1))}
                         disabled={page === 1}
                       >
-                        <ChevronLeft size={14} className="mr-1" /> Oldingi
+                        <ChevronLeft size={14} className="mr-1" /> 
                       </Button>
                       <Button
                         variant="outline"
@@ -149,7 +149,7 @@ export default function TabsProducts() {
                         }
                         disabled={page >= totalPages}
                       >
-                        Keyingi <ChevronRight size={14} className="ml-1" />
+                         <ChevronRight size={14} className="ml-1" />
                       </Button>
                     </div>
                   </div>
@@ -189,7 +189,7 @@ export default function TabsProducts() {
                       <tr>
                         <th className="px-6 py-4 w-24">Tartib</th>
                         <th className="px-6 py-4">Kategoriya nomi</th>
-                        <th className="px-6 py-4 text-right">Amallar</th>
+                        {/*<th className="px-6 py-4 text-right">Amallar</th>*/}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 bg-white text-gray-600">
@@ -204,11 +204,11 @@ export default function TabsProducts() {
                           <td className="px-6 py-4 font-black text-gray-900 text-xs uppercase">
                             {cat.name}
                           </td>
-                          <td className="px-6 py-4 text-right">
-                            <button className="text-[10px] font-bold text-primary hover:underline uppercase">
-                              Tahrirlash
-                            </button>
-                          </td>
+                          {/*<td className="px-6 py-4 text-right">*/}
+                          {/*  /!*<button className="text-[10px] font-bold text-primary hover:underline uppercase">*!/*/}
+                          {/*  /!*  Tahrirlash*!/*/}
+                          {/*  /!*</button>*!/*/}
+                          {/*</td>*/}
                         </tr>
                       ))}
                     </tbody>

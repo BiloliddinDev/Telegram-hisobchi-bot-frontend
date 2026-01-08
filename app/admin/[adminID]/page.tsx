@@ -174,7 +174,7 @@ export default function AdminSellerDetailPage() {
 
   if (sellerLoading || stocksLoading || sellerHistoryLoading) {
     return (
-      <div className="flex flex-col gap-6 p-6 animate-pulse">
+      <div className="flex flex-col gap-6 p-6 animate-pulse mt-10">
         <div className="flex items-center gap-4">
           <Skeleton className="h-10 w-10 rounded-full" />
           <div className="space-y-2">
@@ -201,7 +201,7 @@ export default function AdminSellerDetailPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-6 bg-background min-h-screen">
+    <div className="flex flex-col gap-6 p-6 bg-background min-h-screen mt-10">
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -459,6 +459,7 @@ export default function AdminSellerDetailPage() {
                   <TableRow>
                     <TableHead className="text-[10px] font-black uppercase py-4 px-6">Mijoz / Sana</TableHead>
                     <TableHead className="text-[10px] font-black uppercase py-4 px-6">Mahsulot</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase py-4 px-6">Sana</TableHead>
                     <TableHead className="text-[10px] font-black uppercase py-4 px-6 text-center">Soni</TableHead>
                     <TableHead className="text-[10px] font-black uppercase py-4 px-6 text-right">Jami summa</TableHead>
                   </TableRow>
@@ -471,23 +472,22 @@ export default function AdminSellerDetailPage() {
                               <p className="text-xs font-black uppercase text-slate-800">
                                 {sale.customerName || "Noma'lum mijoz"}
                               </p>
+                            </TableCell>
+                            <TableCell className="px-6 py-4">
                               <p className="text-[9px] font-bold text-slate-400">
                                 {new Date(sale.timestamp).toLocaleString("uz-UZ")}
                               </p>
                             </TableCell>
                             <TableCell className="px-6 py-4">
-                              <p className="text-[10px] font-bold text-slate-600 uppercase">
-                                ID: ...{sale.product.slice(-6)}
-                              </p>
                               <p className="text-[9px] text-slate-400">{sale.customerPhone}</p>
                             </TableCell>
                             <TableCell className="px-6 py-4 text-center">
-                              <Badge variant="outline" className="font-black text-xs">
+                              <Badge variant="outline" className="font-black text-xs w-12 text-center">
                                 {sale.quantity} ta
                               </Badge>
                             </TableCell>
                             <TableCell className="px-6 py-4 text-right">
-                              <p className="text-xs font-black text-green-600">
+                              <p className="text-xs w-12 font-black text-green-600">
                                 + {sale.totalAmount.toLocaleString()} $
                               </p>
                             </TableCell>
