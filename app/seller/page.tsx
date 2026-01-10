@@ -207,9 +207,12 @@ export default function SellerPage() {
                       >
                         <CardContent className="p-4 space-y-3">
                           <div className="flex justify-between items-start">
-                            <h3 className="font-bold text-sm text-gray-900 line-clamp-2">
-                              {stock.product.name}
-                            </h3>
+                            <div>
+                              <h3 className="font-bold text-sm text-gray-900 line-clamp-2">
+                                {stock.product.sku}
+                              </h3>
+                              <p className={"font-bold  text-gray-900 line-clamp-2"}>{stock.product.name}</p>
+                            </div>
                             {cart[stock.product._id] && (
                               <Badge className="bg-primary text-white ml-2">
                                 {cart[stock.product._id].qty}
@@ -313,7 +316,7 @@ export default function SellerPage() {
                               </div>
                               <p className="text-xs font-bold text-gray-900">
                                 {(item.price * item.qty).toLocaleString()}
-                                {`so'm`}
+                                {`$`}
                               </p>
                             </div>
                           </div>
@@ -326,7 +329,7 @@ export default function SellerPage() {
                           Umumiy:
                         </span>
                         <span className="text-lg font-black">
-                          {totalCartAmount.toLocaleString()} {`so'm`}
+                          {totalCartAmount.toLocaleString()} {`$`}
                         </span>
                       </div>
                       <Button
