@@ -278,8 +278,9 @@ export default function SellerPage() {
                               </span>
                               <Input
                                 type="number"
-                                className="h-7 text-xs font-bold border-gray-300 rounded-none w-24"
+                                className="h-7 text-xs font-bold border-gray-300  rounded-none w-24"
                                 value={item.price}
+                                step="0.01"
                                 onChange={(e) =>
                                   updatePrice(
                                     item.stock.product._id,

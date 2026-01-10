@@ -113,6 +113,7 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
                 <Label htmlFor="edit-costPrice">Tan narxi</Label>
                 <Input
                   id="edit-costPrice"
+                  step="0.01"
                   type="number"
                   {...register("costPrice", {
                     required: true,
@@ -124,6 +125,7 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
                 <Label htmlFor="edit-price">Sotuv narxi</Label>
                 <Input
                   id="edit-price"
+                  step="0.01"
                   type="number"
                   {...register("price", {
                     required: true,

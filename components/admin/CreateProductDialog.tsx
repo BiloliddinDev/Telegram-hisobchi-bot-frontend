@@ -96,6 +96,7 @@ export function CreateProductDialog() {
                 <Label htmlFor="costPrice">Tan narxi</Label>
                 <Input
                   id="costPrice"
+                  step="0.01"
                   type="number"
                   {...register("costPrice", {
                     required: true,
@@ -108,6 +109,7 @@ export function CreateProductDialog() {
                 <Input
                   id="price"
                   type="number"
+                  step="0.01"
                   {...register("price", {
                     required: true,
                     valueAsNumber: true,
