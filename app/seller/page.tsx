@@ -8,7 +8,7 @@ import {
 } from "@/hooks/useSellerData";
 import { useAuthStore } from "@/store/authStore";
 import { useToast } from "@/hooks/useToast";
-import {Search, ShoppingCart, Plus, Minus, ShoppingBag, CalendarIcon} from "lucide-react";
+import {Search, ShoppingCart, Plus, Minus, ShoppingBag, CalendarIcon, TrendingUp} from "lucide-react";
 import { uz } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -77,6 +77,14 @@ export default function SellerPage() {
       ) || [],
     [stockData, searchTerm],
   );
+
+  const totalHistoryAmount = useMemo(() => {
+    return salesData?.reduce((sum, sale) => sum + sale.totalAmount, 0) || 0;
+  }, [salesData]);
+
+  const totalHistoryCount = useMemo(() => {
+    return salesData?.length || 0;
+  }, [salesData]);
 
   const handleAddToCart = (stock: ProductStockItem) => {
     const current = cart[stock.product._id];
@@ -398,12 +406,43 @@ export default function SellerPage() {
           </TabsContent>
 
           <TabsContent value="history" className="mt-0 outline-none">
+
+            {!salesLoading && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white border border-gray-200 p-5 rounded-sm shadow-sm flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                        {`Tanlangan davr bo'yicha jami tushum`}
+                      </p>
+                      <h2 className="text-3xl font-black text-primary mt-1">
+                        {totalHistoryAmount.toLocaleString()} $
+                      </h2>
+                    </div>
+                    <div className="h-12 w-12 bg-primary/5 rounded-full flex items-center justify-center">
+                      <TrendingUp className="text-primary w-6 h-6" />
+                    </div>
+                  </div>
+
+                  <div className="bg-white border border-gray-200 p-5 rounded-sm shadow-sm flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                        Sotuvlar soni
+                      </p>
+                      <h2 className="text-3xl font-black text-gray-900 mt-1">
+                        {totalHistoryCount} <span className="text-sm font-bold text-gray-400">ta tranzaksiya</span>
+                      </h2>
+                    </div>
+                    <div className="h-12 w-12 bg-gray-50 rounded-full flex items-center justify-center">
+                      <ShoppingBag className="text-gray-400 w-6 h-6" />
+                    </div>
+                  </div>
+                </div>
+            )}
             {salesLoading ? (
               <HistorySkeleton />
             ) : (
                 <div className="bg-white border border-gray-200 rounded-sm overflow-hidden overflow-x-auto">
                   <table className="w-full text-sm text-left min-w-[600px]">
-                    {/* min-w-[600px] jadvalni kichik ekranlarda siqilib ketishidan saqlaydi va scroll chiqaradi */}
                     <thead className="bg-gray-50 text-gray-500 font-bold text-[10px] uppercase border-b">
                     <tr>
                       <th className="px-4 py-3 whitespace-nowrap">Mahsulot nomi</th>
@@ -425,7 +464,7 @@ export default function SellerPage() {
                           </td>
                           <td className="px-4 py-4 text-center font-bold">{sale.quantity} ta</td>
                           <td className="px-4 py-4 text-right font-black text-primary whitespace-nowrap">
-                            {sale.totalAmount.toLocaleString()} {`so'm`}
+                            {sale.totalAmount.toLocaleString()} {`$`}
                           </td>
                           <td className="px-4 py-4 text-right text-gray-400 text-[10px] font-bold whitespace-nowrap">
                             {new Date(sale.timestamp).toLocaleDateString()} <br />
