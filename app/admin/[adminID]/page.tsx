@@ -40,7 +40,7 @@ import {
   useSellerStocks,
   useUpdateStock,
 } from "@/hooks/useSellerStocks";
-import { ProductStockItem } from "@/interface/seller-stock.type";
+import {ProductStockItem, SaleRecord} from "@/interface/seller-stock.type";
 import { toast } from "sonner";
 import {
   Drawer,
@@ -64,6 +64,15 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { History } from "lucide-react";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 export default function AdminSellerDetailPage() {
   const router = useRouter();
@@ -78,35 +87,31 @@ export default function AdminSellerDetailPage() {
     null,
   );
 
-  interface SaleRecord {
-    _id: string;
-    customerName: string;
-    customerPhone: string;
-    product: string; // Agar backenddan mahsulot ID-si kelsa
-    quantity: number;
-    totalAmount: number;
-    timestamp: string | Date;
-  }
   
   const { data: stocksData, isLoading: stocksLoading } =
     useSellerStocks(sellerId);
   const { mutate: updateStock, isPending: isSaving } = useUpdateStock();
   const { mutate: removeStock, isPending: isRemoving } = useRemoveSellerStock();
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [activeTab, setActiveTab] = useState("inventory");
+
+  const formattedDate = date ? format(date, "yyyy-MM-dd") : undefined;
+
   const {
     data: sellerData,
     isLoading: sellerLoading,
   } = useSellerDetail(sellerId);
-  
-  
+
+
   const {
     data: sellerDataHistory,
     isLoading: sellerHistoryLoading,
-    
-  } = useSellerDetailHistory(sellerId);
+  } = useSellerDetailHistory(sellerId, formattedDate);
 
   const seller = sellerData?.seller;
   const stocks = stocksData?.sellerStocks || [];
   const salesHistory = sellerDataHistory?.sales || [];
+  const stats = sellerDataHistory?.stats;
 
   const filteredStocks = stocks.filter((s) =>
     s.product.name.toLowerCase().includes(search.toLowerCase()),
@@ -239,7 +244,7 @@ export default function AdminSellerDetailPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="inventory" className="w-full">
+      <Tabs value={activeTab} defaultValue="inventory" onValueChange={setActiveTab} className="w-full">
         <div className="bg-white p-2 border rounded-sm shadow-sm mb-6 overflow-x-auto">
           <TabsList className="grid w-full grid-cols-3 sm:w-[600px] h-10 bg-slate-100 p-1 rounded-sm">
             <TabsTrigger
@@ -446,20 +451,77 @@ export default function AdminSellerDetailPage() {
         <TabsContent value="history" className="mt-0 outline-none">
           <Card className="rounded-sm border-slate-200 shadow-none overflow-hidden">
             <CardHeader className="bg-slate-50/50 border-b">
-              <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+              <div className="flex flex-col md:flex-row justify-between md:items-start gap-4">
                 <div>
-                  <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-800">Sotilgan mahsulotlar tarixi</CardTitle>
-                  <CardDescription className="text-[10px] font-bold text-slate-400 uppercase mt-1">Sotuvchi tomonidan amalga oshirilgan barcha tranzaksiyalar</CardDescription>
+                  <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-800">
+                    Sotuvlar tarixi
+                  </CardTitle>
+                  <CardDescription className="text-[10px] font-bold text-slate-400 uppercase mt-1">
+                    Sotuvchi tomonidan amalga oshirilgan tranzaksiyalar
+                  </CardDescription>
+                </div>
+
+                <div className="flex flex-col items-end gap-2">
+                  {/* SANA TANLASH (CALENDAR) */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                          variant={"outline"}
+                          className={cn(
+                              "w-[240px] justify-start text-left font-bold text-[11px] uppercase rounded-sm border-slate-200 shadow-sm",
+                              !date && "text-muted-foreground"
+                          )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4 text-primary" />
+                        {date ? format(date, "dd.MM.yyyy") : <span>{`Sana bo'yicha saralash`}</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 rounded-sm" align="end">
+                      <Calendar
+                          mode="single"
+                          selected={date}
+                          onSelect={setDate}
+                      />
+                      <div className="p-2 border-t flex justify-end">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-[10px] font-bold uppercase"
+                            onClick={() => setDate(undefined)}
+                        >
+                          Tozalash
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
+
+              
+              {date && stats && (
+                  <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-dashed border-slate-200">
+                    <div className=" p-3 rounded-sm border border-slate-200">
+                      <p className="text-[9px] font-black  uppercase">Kunlik jami summa</p>
+                      <p className="text-lg font-black ">
+                        {stats.totalSalesAmount?.toLocaleString()} $
+                      </p>
+                    </div>
+                    <div className=" p-3 rounded-sm border border-slate-200">
+                      <p className="text-[9px] font-black  uppercase">Sotilgan mahsulotlar</p>
+                      <p className="text-lg font-black ">
+                        {stats.totalQuantity} ta
+                      </p>
+                    </div>
+                  </div>
+              )}
             </CardHeader>
+
             <CardContent className="p-0">
               <Table>
                 <TableHeader className="bg-slate-50/80">
                   <TableRow>
-                    <TableHead className="text-[10px] font-black uppercase py-4 px-6">Mijoz / Sana</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase py-4 px-6">Mahsulot</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase py-4 px-6">Sana</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase py-4 px-6">Mijoz / Tel</TableHead>
+                    <TableHead className="text-[10px] font-black uppercase py-4 px-6">Sana / Vaqt</TableHead>
                     <TableHead className="text-[10px] font-black uppercase py-4 px-6 text-center">Soni</TableHead>
                     <TableHead className="text-[10px] font-black uppercase py-4 px-6 text-right">Jami summa</TableHead>
                   </TableRow>
@@ -469,26 +531,26 @@ export default function AdminSellerDetailPage() {
                       salesHistory.map((sale: SaleRecord) => (
                           <TableRow key={sale._id} className="hover:bg-slate-50/50">
                             <TableCell className="px-6 py-4">
-                              <p className="text-xs font-black uppercase text-slate-800">
+                              <p className="text-xs font-black uppercase text-slate-800 leading-none">
                                 {sale.customerName || "Noma'lum mijoz"}
                               </p>
-                            </TableCell>
-                            <TableCell className="px-6 py-4">
-                              <p className="text-[9px] font-bold text-slate-400">
-                                {new Date(sale.timestamp).toLocaleString("uz-UZ")}
+                              <p className="text-[10px] font-bold text-slate-400 mt-1">
+                                {sale.customerPhone || "Tel kiritilmagan"}
                               </p>
                             </TableCell>
                             <TableCell className="px-6 py-4">
-                              <p className="text-[9px] text-slate-400">{sale.customerPhone}</p>
+                              <p className="text-[10px] font-bold text-slate-600 uppercase">
+                                {format(new Date(sale.createdAt || sale.timestamp), "HH:mm • dd.MM.yyyy")}
+                              </p>
                             </TableCell>
                             <TableCell className="px-6 py-4 text-center">
-                              <Badge variant="outline" className="font-black text-xs w-12 text-center">
-                                {sale.quantity} ta
+                              <Badge variant="outline" className="font-black text-[10px] px-2 py-0.5 border-slate-200">
+                                {sale.quantity} TA
                               </Badge>
                             </TableCell>
                             <TableCell className="px-6 py-4 text-right">
-                              <p className="text-xs w-12 font-black text-green-600">
-                                + {sale.totalAmount.toLocaleString()} $
+                              <p className="text-xs font-black text-slate-900">
+                                {sale.totalAmount?.toLocaleString()} $
                               </p>
                             </TableCell>
                           </TableRow>
@@ -496,7 +558,7 @@ export default function AdminSellerDetailPage() {
                   ) : (
                       <TableRow>
                         <TableCell colSpan={4} className="h-32 text-center text-[10px] font-bold uppercase text-slate-400">
-                          Hozircha sotuvlar mavjud emas
+                          {date ? "Ushbu sanada sotuvlar mavjud emas" : "Sotuvlar tarixi mavjud emas"}
                         </TableCell>
                       </TableRow>
                   )}

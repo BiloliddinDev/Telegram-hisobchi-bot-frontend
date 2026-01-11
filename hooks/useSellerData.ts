@@ -14,11 +14,13 @@ export const useSellerStocks = () => {
   });
 };
 
-export const useSellerSalesHistory = () => {
+export const useSellerSalesHistory = (start : string , end : string) => {
   return useQuery<Sale[]>({
-    queryKey: ["seller-sales-history"],
+    queryKey: ["seller-sales-history" , start , end],
     queryFn: async () => {
-      const { data } = await api.get("/sales");
+      const { data } = await api.get("/seller/sales", {
+        params: { start, end }
+      });
       return data.sales;
     },
   });
@@ -51,13 +53,18 @@ export const useSellerDetail = (id: string) => {
 
 
 
-export const useSellerDetailHistory = (sellerId: string) => {
+export const useSellerDetailHistory = (sellerId: string, date?: string) => {
   return useQuery({
-    queryKey: ["seller-detail", sellerId],
+    queryKey: ["seller-detail", sellerId, date],
     queryFn: async () => {
-      const { data } = await api.get<SellerDetailResponse>(`/admin/sellers/${sellerId}/sales`);
+      const { data } = await api.get<SellerDetailResponse>(
+          `/admin/sellers/${sellerId}/sales`,
+          {
+            params: { date } 
+          }
+      );
       return data;
     },
-    enabled: !!sellerId, 
+    enabled: !!sellerId,
   });
 };

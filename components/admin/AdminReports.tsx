@@ -40,7 +40,9 @@ export default function AdminReports() {
     const { showToast } = useToast();
     const [startDate, setStartDate] = useState<Date>(new Date(new Date().setMonth(new Date().getMonth() - 1)));
     const [endDate, setEndDate] = useState<Date>(new Date());
-
+    
+    
+   
     const { data: reports, isLoading: reportsLoading } = useReports(
         formatDateAPI(startDate),
         formatDateAPI(endDate)
@@ -53,6 +55,10 @@ export default function AdminReports() {
     const products = reports?.summary.products;
     const sellerStocks = reports?.summary.sellerStocks;
     const sales = reports?.summary.sales;
+    const profit = sales?.totalProfit || 0;
+    const revenue = sales?.totalRevenue || 1;
+    const margin = ((profit / revenue) * 100).toFixed(1);
+
 
     const chartData = [
         { name: 'Asosiy Ombor', value: products?.totalProductCostPrice || 0 },
@@ -115,6 +121,42 @@ export default function AdminReports() {
                 </div>
             </div>
 
+            <div className="relative overflow-hidden rounded-2xl bg-slate-900 p-8 text-white shadow-lg border border-slate-800">
+                <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-emerald-500/20 blur-[50px]" />
+                <div className="absolute -left-10 -bottom-10 h-40 w-40 rounded-full bg-blue-500/10 blur-[50px]" />
+
+                <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-400 mb-2">
+                            Umumiy Sof Foyda 
+                        </p>
+                        <h2 className="text-5xl font-black tracking-tighter">
+                            {profit.toLocaleString()} <span className="text-2xl text-slate-500">$</span>
+                        </h2>
+                    </div>
+
+                    <div className="flex flex-wrap gap-4 md:gap-12">
+                        <div className="h-10 w-[1px] bg-slate-800 hidden md:block" />
+                        <div>
+                            <p className="text-[10px] font-bold uppercase text-slate-500 mb-1">Jami Tushum</p>
+                            <p className="text-xl font-bold text-white">{sales?.totalRevenue?.toLocaleString()} $</p>
+                        </div>
+                        <div className="h-10 w-[1px] bg-slate-800 hidden md:block" />
+                        <div>
+                            <p className="text-[10px] font-bold uppercase text-slate-500 mb-1">Sotilgan tovar</p>
+                            <p className="text-xl font-bold text-white">{sales?.totalSalesQuantity?.toLocaleString()} dona</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Pastki chiziq (Progress bar kabi) */}
+                <div className="mt-8 h-1 w-full rounded-full bg-slate-800/50">
+                    <div
+                        className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-1000"
+                        style={{ width: `${Math.min(Number(margin), 100)}%` }}
+                    />
+                </div>
+            </div>
            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <AnalyticCard

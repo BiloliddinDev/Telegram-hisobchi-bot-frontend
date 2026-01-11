@@ -89,7 +89,13 @@ export interface Seller {
   isActive: boolean;
 }
 
+
 export interface SellerDetailResponse {
-  seller: Seller;
-  sales: SaleRecord[]; // Mana o'sha tarix ro'yxati
+  sales:  SaleRecord[];
+  stats: {
+    totalSalesAmount: number;
+    totalQuantity: number;
+    count: number;
+  };
+  message?: string;
 }

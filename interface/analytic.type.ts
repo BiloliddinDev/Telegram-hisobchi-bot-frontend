@@ -17,6 +17,7 @@ export interface ReportData {
     sales: {
       totalSales: number;
       totalRevenue: number;
+      totalProfit : number;
       totalSalesQuantity: number;
       totalSellers: number;
       totalProductsSold: number;

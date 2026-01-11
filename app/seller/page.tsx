@@ -8,8 +8,8 @@ import {
 } from "@/hooks/useSellerData";
 import { useAuthStore } from "@/store/authStore";
 import { useToast } from "@/hooks/useToast";
-import { Search, ShoppingCart, Plus, Minus, ShoppingBag } from "lucide-react";
-
+import {Search, ShoppingCart, Plus, Minus, ShoppingBag, CalendarIcon} from "lucide-react";
+import { uz } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { Sale } from "@/interface/sale.type";
 import { ProductStockItem } from "@/interface/seller-stock.type";
 import {
@@ -28,6 +30,7 @@ import {
   HistorySkeleton,
 } from "@/components/seller/SellerSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
+import {format} from "date-fns";
 
 interface ApiError {
   response?: {
@@ -44,9 +47,20 @@ export default function SellerPage() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const [startDate, setStartDate] = useState<Date>(new Date(new Date().setMonth(new Date().getMonth() - 1)));
+  const [endDate, setEndDate] = useState<Date>(new Date());
+  const formatDateAPI = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  const [activeTab, setActiveTab] = useState("products");
+  const startStr = useMemo(() => formatDateAPI(startDate), [startDate]);
+  const endStr = useMemo(() => formatDateAPI(endDate), [endDate]);
+  
   const { data: stockData, isLoading: stockLoading } = useSellerStocks();
-  const { data: salesData, isLoading: salesLoading } = useSellerSalesHistory();
+  const { data: salesData, isLoading: salesLoading } = useSellerSalesHistory(startStr, endStr);
   const { mutateAsync: processSale, isPending: isSelling } = useProcessSale();
 
   const [cart, setCart] = useState<
@@ -166,22 +180,58 @@ export default function SellerPage() {
       </header>
 
       <main className="max-w-7xl mx-auto p-4 md:p-6">
-        <Tabs defaultValue="products" className="space-y-6">
-          <TabsList className="w-full justify-start border-b rounded-none bg-transparent h-auto p-0 gap-8">
-            <TabsTrigger
-              value="products"
-              className="data-[state=active]:border-primary data-[state=active]:text-primary border-b-2 border-transparent rounded-none px-2 py-3 bg-transparent shadow-none font-bold text-sm transition-all uppercase"
-            >
-              Mahsulotlar
-            </TabsTrigger>
-            <TabsTrigger
-              value="history"
-              className="data-[state=active]:border-primary data-[state=active]:text-primary border-b-2 border-transparent rounded-none px-2 py-3 bg-transparent shadow-none font-bold text-sm transition-all uppercase"
-            >
-              Sotuv Tarixi
-            </TabsTrigger>
-          </TabsList>
+        <Tabs defaultValue="products" onValueChange={setActiveTab} className="space-y-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-1">
+            <TabsList className="justify-start border-none rounded-none bg-transparent h-auto p-0 gap-8">
+              <TabsTrigger
+                  value="products"
+                  className="data-[state=active]:border-primary data-[state=active]:text-primary border-b-2 border-transparent rounded-none px-2 py-3 bg-transparent shadow-none font-bold text-sm transition-all uppercase"
+              >
+                Mahsulotlar
+              </TabsTrigger>
+              <TabsTrigger
+                  value="history"
+                  className="data-[state=active]:border-primary data-[state=active]:text-primary border-b-2 border-transparent rounded-none px-2 py-3 bg-transparent shadow-none font-bold text-sm transition-all uppercase"
+              >
+                Sotuv Tarixi
+              </TabsTrigger>
+            </TabsList>
 
+            {/* KALENDAR: Faqat history tanlanganda chiqadi */}
+            {activeTab === "history" && (
+                <div className="flex items-center gap-2 mb-2 bg-white border rounded-lg p-1 shadow-sm">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 text-[11px] font-bold uppercase hover:bg-slate-50">
+                        <CalendarIcon className="mr-2 h-3.5 w-3.5 text-primary" />
+                        {format(startDate, "dd MMM", { locale: uz })} — {format(endDate, "dd MMM", { locale: uz })}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 flex flex-col md:flex-row shadow-2xl border-slate-200" align="end">
+                      <div className="p-2 border-b md:border-b-0 md:border-r">
+                        <p className="text-[10px] font-black uppercase p-2 text-slate-400 text-center">Dan</p>
+                        <Calendar
+                            mode="single"
+                            selected={startDate}
+                            onSelect={(d) => d && setStartDate(d)}
+                            disabled={(date) => date > new Date()}
+                        />
+                      </div>
+                      <div className="p-2">
+                        <p className="text-[10px] font-black uppercase p-2 text-slate-400 text-center">Gacha</p>
+                        <Calendar
+                            mode="single"
+                            selected={endDate}
+                            onSelect={(d) => d && setEndDate(d)}
+                            disabled={(date) => date < startDate || date > new Date()}
+                        />
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+            )}
+          </div>
+          
           <TabsContent value="products" className="mt-0 outline-none">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               <div className="lg:col-span-3 space-y-4">
