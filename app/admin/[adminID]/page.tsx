@@ -520,6 +520,7 @@ export default function AdminSellerDetailPage() {
               <Table>
                 <TableHeader className="bg-slate-50/80">
                   <TableRow>
+                    <TableHead className="text-[10px] font-black uppercase py-4 px-6">Mahsulot Nomi/SKU</TableHead>
                     <TableHead className="text-[10px] font-black uppercase py-4 px-6">Mijoz / Tel</TableHead>
                     <TableHead className="text-[10px] font-black uppercase py-4 px-6">Sana / Vaqt</TableHead>
                     <TableHead className="text-[10px] font-black uppercase py-4 px-6 text-center">Soni</TableHead>
@@ -530,6 +531,14 @@ export default function AdminSellerDetailPage() {
                   {salesHistory.length > 0 ? (
                       salesHistory.map((sale: SaleRecord) => (
                           <TableRow key={sale._id} className="hover:bg-slate-50/50">
+                            <TableCell>
+                              <p className="text-xs font-black uppercase mb-2 text-slate-800 leading-none">
+                                {sale.product.name}
+                              </p>
+                              <p className="font-black text-[10px] uppercase text-slate-400 leading-none">
+                                {sale.product.sku}
+                              </p>
+                            </TableCell>
                             <TableCell className="px-6 py-4">
                               <p className="text-xs font-black uppercase text-slate-800 leading-none">
                                 {sale.customerName || "Noma'lum mijoz"}

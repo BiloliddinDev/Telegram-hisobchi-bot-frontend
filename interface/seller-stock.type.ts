@@ -69,7 +69,10 @@ export interface ActiveAssignedStocksResponse {
 export interface SaleRecord {
   _id: string;
   seller: string;
-  product: string; // Agar backend populate qilmasa string keladi
+  product: {
+    name : string;
+    sku: string;
+  }; // Agar backend populate qilmasa string keladi
   quantity: number;
   price: number;
   totalAmount: number;

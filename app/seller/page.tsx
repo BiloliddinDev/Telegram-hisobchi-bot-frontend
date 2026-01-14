@@ -527,7 +527,7 @@ export default function SellerPage() {
               <p className="text-[10px] font-black text-gray-400 uppercase italic">{`To'lov miqdori:`}</p>
               <p className="text-xl font-black text-primary">
                 {totalCartAmount.toLocaleString()}
-                {`so'm`}
+                {`'$`}
               </p>
             </div>
             <Button
