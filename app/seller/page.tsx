@@ -530,7 +530,7 @@ export default function SellerPage() {
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleFinalSubmit}
-        totalAmount={finalAmount}
+        totalAmount={totalCartAmount}
         discount={discount} // ← qo'shing
         discountAmount={discountAmount}
         isSelling={isSelling}
