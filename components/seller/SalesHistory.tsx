@@ -153,19 +153,27 @@ export default function SalesHistory({
                   </div>
                 ))}
 
-                {/* Discount */}
                 {order.discountPercent > 0 && (
-                  <div className="flex justify-between items-center py-1 border-b border-dashed border-gray-100">
-                    <span className="text-[10px] font-black text-gray-400 uppercase">
-                      Chegirma:
-                    </span>
-                    <span className="text-[11px] font-black text-gray-500">
-                      {order.discountPercent}% — -
-                      {order.discount.toLocaleString()} $
-                    </span>
+                  <div className="space-y-1 py-1 border-b border-dashed border-gray-100">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-black text-gray-400 uppercase">
+                        Chegirmasiz:
+                      </span>
+                      <span className="text-[11px] font-black text-gray-400 line-through">
+                        {order.rawTotal.toLocaleString()} $ {/* ← rawTotal */}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-black text-gray-400 uppercase">
+                        Chegirma:
+                      </span>
+                      <span className="text-[11px] font-black text-green-600">
+                        -{order.discountPercent}% (-
+                        {(order.rawTotal - order.totalAmount).toFixed(2)} $)
+                      </span>
+                    </div>
                   </div>
                 )}
-
                 {/* Jami + Qarz */}
                 <div className="flex justify-between items-center pt-2 border-t border-gray-100">
                   <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">

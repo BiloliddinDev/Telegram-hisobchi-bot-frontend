@@ -39,6 +39,7 @@ export const useProcessSale = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["seller-stocks"] });
+      queryClient.invalidateQueries({ queryKey: ["seller-customers"] });
       queryClient.invalidateQueries({ queryKey: ["seller-sales-history"] });
     },
   });
@@ -68,5 +69,15 @@ export const useSellerDetailHistory = (sellerId: string, date?: string) => {
       return data;
     },
     enabled: !!sellerId,
+  });
+};
+
+export const useSellerCustomers = () => {
+  return useQuery({
+    queryKey: ["seller-customers"],
+    queryFn: async () => {
+      const { data } = await api.get("/customers");
+      return data.customers;
+    },
   });
 };

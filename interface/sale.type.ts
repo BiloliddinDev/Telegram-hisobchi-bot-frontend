@@ -24,14 +24,12 @@ export interface Sale {
 export interface CreateSalePayload {
   orderId: string;
   items: BatchSaleItem[];
-  customerName: string;
-  customerPhone: string;
-  discount?: number; // chegirma summasi
-  discountPercent?: number;
+  customerName?: string;
+  customerPhone?: string;
   notes?: string;
-  totalAmount?: number;
-  paidAmount?: number; // ← qo'shing
-  dueDate?: Date | null; // ← qo'shing
+  paidAmount?: number;
+  dueDate?: Date | null;
+  discountPercent?: number;
 }
 
 // Grouped order uchun yangi interface
@@ -59,6 +57,6 @@ export interface GroupedOrder {
   debt: number;
   paidAmount: number;
   status: string;
-  discount: number; // ← qo'shing
+  rawTotal: number;
   discountPercent: number;
 }

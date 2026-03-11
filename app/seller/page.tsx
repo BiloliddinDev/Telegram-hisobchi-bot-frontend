@@ -35,15 +35,8 @@ import { v4 as uuidv4 } from "uuid";
 import { format } from "date-fns";
 import SalesHistory from "@/components/seller/SalesHistory";
 import CheckoutModal from "@/components/seller/CheckoutModal";
-
-interface ApiError {
-  response?: {
-    data?: {
-      message?: string;
-    };
-  };
-  message: string;
-}
+import { cn } from "@/lib/utils";
+import CustomersList from "@/components/seller/CustomersList";
 
 export default function SellerPage() {
   const { user } = useAuthStore();
@@ -55,6 +48,8 @@ export default function SellerPage() {
     new Date(new Date().setMonth(new Date().getMonth() - 1)),
   );
   const [endDate, setEndDate] = useState<Date>(new Date());
+  const [editingQty, setEditingQty] = useState<string | null>(null);
+  const [editingQtyValue, setEditingQtyValue] = useState<string>("");
   const formatDateAPI = (date: Date): string => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -154,7 +149,6 @@ export default function SellerPage() {
     paidAmount: number;
     dueDate: Date | null;
     isNasiya: boolean;
-    discount: number;
     discountPercent: number;
   }) => {
     try {
@@ -165,19 +159,15 @@ export default function SellerPage() {
         price: item.price,
       }));
 
-      // ✅ MUHIM: Backend-ga totalAmount va paidAmount-ni aniq yuboramiz
-      // Agar naqd bo'lsa, paidAmount totalAmount-ga teng bo'lishi kerak
       await processSale({
         orderId,
         items,
-        totalAmount: finalAmount,
         customerName: formData.customerName,
         customerPhone: formData.customerPhone,
         notes: formData.notes,
-        paidAmount: formData.paidAmount, // Modal ichidan kelgan qiymat
+        paidAmount: formData.paidAmount,
         dueDate: formData.dueDate,
-        discount: discountAmount, // Umumiy chegirma summasi
-        discountPercent: discount, // % da
+        discountPercent: discount,
       });
 
       showToast("Sotuv muvaffaqiyatli yakunlandi", "success");
@@ -233,6 +223,13 @@ export default function SellerPage() {
                 className="data-[state=active]:border-primary data-[state=active]:text-primary border-b-2 border-transparent rounded-none px-2 py-3 bg-transparent shadow-none font-bold text-sm transition-all uppercase"
               >
                 Sotuv Tarixi
+              </TabsTrigger>
+
+              <TabsTrigger
+                className="data-[state=active]:border-primary data-[state=active]:text-primary border-b-2 border-transparent rounded-none px-2 py-3 bg-transparent shadow-none font-bold text-sm transition-all uppercase"
+                value="customers"
+              >
+                Qarzdorlar
               </TabsTrigger>
             </TabsList>
 
@@ -305,8 +302,15 @@ export default function SellerPage() {
                     {filteredStocks.map((stock: ProductStockItem) => (
                       <Card
                         key={stock.stock._id}
-                        onClick={() => handleAddToCart(stock)}
-                        className="cursor-pointer hover:border-primary transition-colors border-gray-200 shadow-none rounded-sm"
+                        onClick={() =>
+                          stock.stock.quantity > 0 && handleAddToCart(stock)
+                        }
+                        className={cn(
+                          "border-gray-200 shadow-none rounded-sm transition-colors",
+                          stock.stock.quantity > 0
+                            ? "cursor-pointer hover:border-primary"
+                            : "cursor-not-allowed opacity-40 grayscale",
+                        )}
                       >
                         <CardContent className="p-4 space-y-3">
                           <div className="flex justify-between items-start">
@@ -384,6 +388,7 @@ export default function SellerPage() {
                                 ✕
                               </button>
                             </div>
+
                             <div className="flex items-center gap-2">
                               <span className="text-[10px] text-gray-400 font-bold uppercase mr-3">
                                 Sotuv Narxi:
@@ -393,7 +398,6 @@ export default function SellerPage() {
                                 inputMode="decimal"
                                 className="h-7 text-xs font-bold border-gray-300 rounded-none w-24"
                                 value={item.price}
-                                step="0.01"
                                 onChange={(e) => {
                                   const val = e.target.value.replace(
                                     /[^0-9.]/g,
@@ -406,6 +410,7 @@ export default function SellerPage() {
                                 }}
                               />
                             </div>
+
                             <div className="flex items-center justify-between">
                               <div className="flex items-center border rounded-md bg-white">
                                 <Button
@@ -418,9 +423,66 @@ export default function SellerPage() {
                                 >
                                   <Minus size={10} />
                                 </Button>
-                                <span className="text-xs font-bold w-8 text-center">
-                                  {item.qty}
-                                </span>
+
+                                {editingQty === item.stock.product._id ? (
+                                  <input
+                                    autoFocus
+                                    type="text"
+                                    inputMode="numeric"
+                                    className="text-xs font-bold w-10 text-center outline-none border-none bg-white"
+                                    value={editingQtyValue}
+                                    onChange={(e) => {
+                                      const val = e.target.value.replace(
+                                        /[^0-9]/g,
+                                        "",
+                                      );
+                                      setEditingQtyValue(val);
+                                    }}
+                                    onBlur={() => {
+                                      const num = parseInt(editingQtyValue);
+                                      if (!isNaN(num) && num > 0) {
+                                        const max = item.stock.stock.quantity;
+                                        const final = Math.min(num, max);
+                                        setCart((prev) => ({
+                                          ...prev,
+                                          [item.stock.product._id]: {
+                                            ...prev[item.stock.product._id],
+                                            qty: final,
+                                          },
+                                        }));
+                                        if (num > max) {
+                                          showToast(
+                                            "Ombordagi miqdordan ko'p bo'lmaydi",
+                                            "error",
+                                          );
+                                        }
+                                      }
+                                      setEditingQty(null);
+                                      setEditingQtyValue("");
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") {
+                                        (e.target as HTMLInputElement).blur();
+                                      }
+                                      if (e.key === "Escape") {
+                                        setEditingQty(null);
+                                        setEditingQtyValue("");
+                                      }
+                                    }}
+                                  />
+                                ) : (
+                                  <span
+                                    className="text-xs font-bold w-10 text-center cursor-pointer select-none"
+                                    onDoubleClick={() => {
+                                      setEditingQty(item.stock.product._id);
+                                      setEditingQtyValue(item.qty.toString());
+                                    }}
+                                    title="2x bosing — o'zgartirish"
+                                  >
+                                    {item.qty}
+                                  </span>
+                                )}
+
                                 <Button
                                   variant="ghost"
                                   size="icon"
@@ -503,10 +565,17 @@ export default function SellerPage() {
                       {/* Tugma */}
                       <Button
                         className="w-full bg-primary hover:bg-primary/90 font-bold h-11 rounded-sm uppercase text-xs tracking-widest shadow-md"
-                        disabled={Object.keys(cart).length === 0}
+                        disabled={Object.keys(cart).length === 0 || isSelling}
                         onClick={onCheckout}
                       >
-                        Sotuvni yakunlash
+                        {isSelling ? (
+                          <span className="flex items-center gap-2">
+                            <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            Yuborilmoqda...
+                          </span>
+                        ) : (
+                          "Sotuvni yakunlash"
+                        )}
                       </Button>
                     </div>
                   </CardContent>
@@ -523,6 +592,10 @@ export default function SellerPage() {
               isLoading={salesLoading}
             />
           </TabsContent>
+
+          <TabsContent value="customers">
+            <CustomersList />
+          </TabsContent>
         </Tabs>
       </main>
 
@@ -531,7 +604,7 @@ export default function SellerPage() {
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleFinalSubmit}
         totalAmount={totalCartAmount}
-        discount={discount} // ← qo'shing
+        discount={discount}
         discountAmount={discountAmount}
         isSelling={isSelling}
       />
