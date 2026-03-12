@@ -90,20 +90,37 @@ export default function CheckoutModal({
   }, [activeTab, netTotal, setValue, clearErrors, open]);
 
   const handleClose = () => {
-    reset();
+    reset({
+      customerName: "",
+      customerPhone: "+998",
+      notes: "",
+      paidAmount: "0",
+      dueDate: undefined,
+    });
     setActiveTab("naqd");
     onClose();
   };
 
   const onInternalSubmit = (data: CheckoutFormValues) => {
+    const phoneRegex = /^\+998[0-9]{9}$/;
+
     if (activeTab === "nasiya") {
-      if (!data.customerName) {
+      if (!data.customerName.trim()) {
         setError("customerName", {
           type: "manual",
           message: "Mijoz ismini kiriting!",
         });
         return;
       }
+
+      if (!data.customerPhone || !phoneRegex.test(data.customerPhone)) {
+        setError("customerPhone", {
+          type: "manual",
+          message: "+998XXXXXXXXX formatida to'liq kiriting!",
+        });
+        return;
+      }
+
       if (!data.dueDate) {
         setError("dueDate", {
           type: "manual",
@@ -194,8 +211,8 @@ export default function CheckoutModal({
               )}
             />
             {errors.customerName && (
-              <p className="text-[10px] text-red-500 font-bold">
-                {errors.customerName.message}
+              <p className="text-[10px] text-red-500 font-bold flex items-center gap-1">
+                <AlertCircle size={12} /> {errors.customerName.message}
               </p>
             )}
           </div>
@@ -204,8 +221,41 @@ export default function CheckoutModal({
           <div className="space-y-1.5">
             <label className="text-[11px] font-bold text-slate-500 uppercase">
               Telefon
+              {activeTab === "nasiya" && (
+                <span className="text-red-500 ml-1">*</span>
+              )}
             </label>
-            <Input {...register("customerPhone")} placeholder="+998901234567" />
+            <Input
+              {...register("customerPhone")}
+              placeholder="+998901234567"
+              maxLength={13}
+              onChange={(e) => {
+                let val = e.target.value.replace(/[^\d+]/g, "");
+                if (!val.startsWith("+998")) {
+                  val = "+998";
+                }
+                if (val.length > 13) {
+                  val = val.slice(0, 13);
+                }
+                setValue("customerPhone", val);
+                clearErrors("customerPhone");
+              }}
+              className={cn(
+                errors.customerPhone &&
+                  "border-red-500 focus-visible:ring-red-500",
+              )}
+            />
+            {errors.customerPhone && (
+              <p className="text-[10px] text-red-500 font-bold flex items-center gap-1">
+                <AlertCircle size={12} /> {errors.customerPhone.message}
+              </p>
+            )}
+            {/* Format hint */}
+            {activeTab === "nasiya" && !errors.customerPhone && (
+              <p className="text-[10px] text-slate-400">
+                Format: +998XXXXXXXXX (13 ta belgi)
+              </p>
+            )}
           </div>
 
           {/* To'langan va Qarz */}
@@ -218,6 +268,8 @@ export default function CheckoutModal({
                 {...register("paidAmount")}
                 type="number"
                 step="0.01"
+                min="0"
+                max={netTotal}
                 className="font-bold text-blue-600"
                 readOnly={activeTab === "naqd"}
               />

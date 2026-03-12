@@ -4,7 +4,7 @@ import {
   ActiveAssignedStocksWithSummaryResponse,
   SellerDetailResponse,
 } from "@/interface/seller-stock.type";
-import { Sale, CreateSalePayload } from "@/interface/sale.type";
+import { CreateSalePayload } from "@/interface/sale.type";
 import { User } from "@/interface/User.type";
 import { GroupedOrder } from "@/interface/sale.type";
 

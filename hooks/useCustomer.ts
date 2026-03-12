@@ -34,6 +34,7 @@ export const useAcceptPayment = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["seller-customers"] });
       queryClient.invalidateQueries({ queryKey: ["customer-detail"] });
+      queryClient.invalidateQueries({ queryKey: ["seller-sales-history"] });
     },
   });
 };
