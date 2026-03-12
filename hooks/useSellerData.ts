@@ -1,8 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
-import {ActiveAssignedStocksWithSummaryResponse, SellerDetailResponse} from "@/interface/seller-stock.type";
-import { Sale, CreateSalePayload } from "@/interface/sale.type";
+import {
+  ActiveAssignedStocksWithSummaryResponse,
+  SellerDetailResponse,
+} from "@/interface/seller-stock.type";
+import { CreateSalePayload } from "@/interface/sale.type";
 import { User } from "@/interface/User.type";
+import { GroupedOrder } from "@/interface/sale.type";
 
 export const useSellerStocks = () => {
   return useQuery<ActiveAssignedStocksWithSummaryResponse>({
@@ -14,12 +18,12 @@ export const useSellerStocks = () => {
   });
 };
 
-export const useSellerSalesHistory = (start : string , end : string) => {
-  return useQuery<Sale[]>({
-    queryKey: ["seller-sales-history" , start , end],
+export const useSellerSalesHistory = (start: string, end: string) => {
+  return useQuery<GroupedOrder[]>({
+    queryKey: ["seller-sales-history", start, end],
     queryFn: async () => {
       const { data } = await api.get("/seller/sales", {
-        params: { start, end }
+        params: { start, end },
       });
       return data.sales;
     },
@@ -30,11 +34,12 @@ export const useProcessSale = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: CreateSalePayload) => {
-      const { data } = await api.post("/sales", payload);
+      const { data } = await api.post("/sales/batch", payload);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["seller-stocks"] });
+      queryClient.invalidateQueries({ queryKey: ["seller-customers"] });
       queryClient.invalidateQueries({ queryKey: ["seller-sales-history"] });
     },
   });
@@ -51,20 +56,28 @@ export const useSellerDetail = (id: string) => {
   });
 };
 
-
-
 export const useSellerDetailHistory = (sellerId: string, date?: string) => {
   return useQuery({
     queryKey: ["seller-detail", sellerId, date],
     queryFn: async () => {
       const { data } = await api.get<SellerDetailResponse>(
-          `/admin/sellers/${sellerId}/sales`,
-          {
-            params: { date } 
-          }
+        `/admin/sellers/${sellerId}/sales`,
+        {
+          params: { date },
+        },
       );
       return data;
     },
     enabled: !!sellerId,
+  });
+};
+
+export const useSellerCustomers = () => {
+  return useQuery({
+    queryKey: ["seller-customers"],
+    queryFn: async () => {
+      const { data } = await api.get("/customers");
+      return data.customers;
+    },
   });
 };
