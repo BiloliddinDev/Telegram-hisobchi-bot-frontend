@@ -30,6 +30,7 @@ export interface CreateSalePayload {
   paidAmount?: number;
   dueDate?: Date | null;
   discountPercent?: number;
+  paymentType?: "naqd" | "nasiya"; // isNasiya o'rniga
 }
 
 // Grouped order uchun yangi interface
@@ -59,4 +60,5 @@ export interface GroupedOrder {
   status: string;
   rawTotal: number;
   discountPercent: number;
+  dueDate?: Date;
 }

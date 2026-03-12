@@ -23,6 +23,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { GroupedOrder } from "@/interface/sale.type";
+import { OrderItem, Payment } from "@/interface/customer";
 
 export default function CustomerDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -47,8 +49,12 @@ export default function CustomerDetailPage() {
       setIsPaymentModal(false);
       setPaymentAmount("");
       setPaymentNotes("");
-    } catch (error: any) {
-      showToast(error.response?.data?.error || "Xatolik yuz berdi", "error");
+    } catch (error: unknown) {
+      showToast(
+        (error as { response?: { data?: { error?: string } } })?.response?.data
+          ?.error || "Xatolik yuz berdi",
+        "error",
+      );
     }
   };
 
@@ -87,18 +93,17 @@ export default function CustomerDetailPage() {
             </div>
           </div>
 
-          {/* Qarz badge */}
           <div className="text-right">
-            {customer?.totalDebt > 0 ? (
+            {(customer?.totalDebt ?? 0) > 0 ? (
               <Badge variant="destructive" className="text-sm px-3 py-1">
-                {customer.totalDebt.toLocaleString()} $ qarz
+                {customer?.totalDebt.toLocaleString()} $ qarz
               </Badge>
             ) : (
               <Badge
                 variant="outline"
                 className="text-sm px-3 py-1 text-green-600 border-green-200"
               >
-                ✅ Qarz yo'q
+                {`✅ Qarz yo'q`}
               </Badge>
             )}
           </div>
@@ -106,26 +111,24 @@ export default function CustomerDetailPage() {
       </div>
 
       <div className="max-w-3xl mx-auto px-6 py-6 space-y-6">
-        {/* To'lov tugmasi */}
-        {customer?.totalDebt > 0 && (
+        {(customer?.totalDebt ?? 0) > 0 && (
           <Button
             onClick={() => setIsPaymentModal(true)}
             className="w-full"
             size="lg"
           >
             <CreditCard size={16} className="mr-2" />
-            To'lov qabul qilish
+            {`To'lov qabul qilish`}
           </Button>
         )}
 
-        {/* Tabs */}
         <Tabs defaultValue="orders">
           <TabsList className="w-full">
             <TabsTrigger value="orders" className="flex-1">
               Xaridlar tarixi
             </TabsTrigger>
             <TabsTrigger value="payments" className="flex-1">
-              To'lovlar tarixi
+              {`To'lovlar tarixi`}
             </TabsTrigger>
           </TabsList>
 
@@ -137,7 +140,7 @@ export default function CustomerDetailPage() {
               </div>
             ) : (
               <Accordion type="single" collapsible className="space-y-2">
-                {orders.map((order: any) => (
+                {orders.map((order: GroupedOrder) => (
                   <AccordionItem
                     key={order.orderId}
                     value={order.orderId}
@@ -167,7 +170,7 @@ export default function CustomerDetailPage() {
                                   : "text-muted-foreground",
                               )}
                             >
-                              📅 Muddat:{" "}
+                              {`📅 Muddat: `}
                               {new Date(order.dueDate).toLocaleDateString()}
                               {new Date(order.dueDate) < new Date() && " ⚠️"}
                             </div>
@@ -187,7 +190,7 @@ export default function CustomerDetailPage() {
                               variant="outline"
                               className="text-xs text-green-600 border-green-200"
                             >
-                              To'liq to'langan
+                              {`To'liq to'langan`}
                             </Badge>
                           )}
                         </div>
@@ -196,7 +199,7 @@ export default function CustomerDetailPage() {
 
                     <AccordionContent className="pb-4">
                       <div className="space-y-2 pt-2 border-t">
-                        {order.items.map((item: any) => (
+                        {order.items.map((item: OrderItem) => (
                           <div
                             key={item._id}
                             className="flex justify-between items-center py-2 border-b last:border-0"
@@ -216,7 +219,6 @@ export default function CustomerDetailPage() {
                           </div>
                         ))}
 
-                        {/* Jami */}
                         <div className="pt-2 space-y-1">
                           <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">Jami:</span>
@@ -226,7 +228,7 @@ export default function CustomerDetailPage() {
                           </div>
                           <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">
-                              To'langan:
+                              {`To'langan:`}
                             </span>
                             <span className="font-semibold text-green-600">
                               {order.paidAmount?.toLocaleString()} $
@@ -255,11 +257,11 @@ export default function CustomerDetailPage() {
           <TabsContent value="payments" className="mt-4 space-y-2">
             {!payments?.length ? (
               <div className="text-center py-12 text-muted-foreground text-sm">
-                To'lovlar topilmadi
+                {`To'lovlar topilmadi`}
               </div>
             ) : (
               <div className="space-y-2">
-                {payments.map((payment: any) => (
+                {payments.map((payment: Payment) => (
                   <div
                     key={payment._id}
                     className="bg-white border rounded-lg px-4 py-3 flex items-center justify-between"
@@ -292,7 +294,7 @@ export default function CustomerDetailPage() {
       <Dialog open={isPaymentModal} onOpenChange={setIsPaymentModal}>
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
-            <DialogTitle>To'lov qabul qilish</DialogTitle>
+            <DialogTitle>{`To'lov qabul qilish`}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 pt-2">
@@ -304,7 +306,7 @@ export default function CustomerDetailPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">To'lov summasi</label>
+              <label className="text-sm font-medium">{`To'lov summasi`}</label>
               <Input
                 type="text"
                 inputMode="decimal"
@@ -345,7 +347,7 @@ export default function CustomerDetailPage() {
                   Yuborilmoqda...
                 </span>
               ) : (
-                "To'lovni tasdiqlash"
+                `To'lovni tasdiqlash`
               )}
             </Button>
           </div>

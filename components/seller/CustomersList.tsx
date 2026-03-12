@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter } from "next/navigation";
+import { Customer } from "@/interface/customer";
 
 export default function CustomersList() {
   const { data: customers, isLoading } = useSellerCustomers();
@@ -24,13 +25,13 @@ export default function CustomersList() {
   if (!customers?.length) {
     return (
       <div className="bg-white border border-gray-200 rounded-sm p-10 text-center text-gray-400 text-xs font-bold uppercase">
-        ✅ Qarzdor mijozlar yo'q
+        ✅ {`Qarzdor mijozlar yo'q`}
       </div>
     );
   }
 
   const totalDebt = customers.reduce(
-    (sum: number, c: any) => sum + c.totalDebt,
+    (sum: number, c: Customer) => sum + c.totalDebt,
     0,
   );
 
@@ -53,7 +54,7 @@ export default function CustomersList() {
 
       {/* Qarzdorlar ro'yxati */}
       <div className="space-y-2">
-        {customers.map((customer: any) => (
+        {customers.map((customer: Customer) => (
           <Card
             onClick={() => router.push(`/seller/${customer._id}`)}
             key={customer._id}

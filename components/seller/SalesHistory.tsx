@@ -76,7 +76,7 @@ export default function SalesHistory({
             <h2 className="text-2xl font-black text-green-600 mt-1">
               {totalPaid.toLocaleString()} $
             </h2>
-            <p className="text-[10px] text-gray-400 mt-1">Qo'ldagi pul</p>
+            <p className="text-[10px] text-gray-400 mt-1">{`Qo'ldagi pul`}</p>
           </div>
           <div className="h-12 w-12 bg-green-50 rounded-full flex items-center justify-center">
             <ShoppingBag className="text-green-500 w-6 h-6" />
@@ -160,7 +160,7 @@ export default function SalesHistory({
                     </span>
                   ) : (
                     <span className="text-[10px] font-black text-green-600 block">
-                      ✅ To'liq to'langan
+                      ✅ {`To'liq to'langan`}
                     </span>
                   )}
                   <div className="flex items-center gap-1 text-gray-400 justify-end">
@@ -240,7 +240,7 @@ export default function SalesHistory({
                 {order.paidAmount > 0 && order.debt > 0 && (
                   <div className="flex justify-between items-center bg-green-50 px-3 py-2">
                     <span className="text-[10px] font-black text-green-600 uppercase">
-                      ✅ To'langan:
+                      {`✅ To'langan:`}
                     </span>
                     <span className="font-black text-green-600">
                       {order.paidAmount.toLocaleString()} $

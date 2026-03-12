@@ -37,6 +37,7 @@ import SalesHistory from "@/components/seller/SalesHistory";
 import CheckoutModal from "@/components/seller/CheckoutModal";
 import { cn } from "@/lib/utils";
 import CustomersList from "@/components/seller/CustomersList";
+import { CreateSalePayload } from "@/interface/sale.type";
 
 export default function SellerPage() {
   const { user } = useAuthStore();
@@ -142,15 +143,7 @@ export default function SellerPage() {
     setIsModalOpen(true);
   };
 
-  const handleFinalSubmit = async (formData: {
-    customerName: string;
-    customerPhone: string;
-    notes: string;
-    paidAmount: number;
-    dueDate: Date | null;
-    isNasiya: boolean;
-    discountPercent: number;
-  }) => {
+  const handleFinalSubmit = async (formData: CreateSalePayload) => {
     try {
       const orderId = uuidv4();
       const items = Object.values(cart).map((item) => ({
@@ -160,13 +153,9 @@ export default function SellerPage() {
       }));
 
       await processSale({
+        ...formData,
         orderId,
         items,
-        customerName: formData.customerName,
-        customerPhone: formData.customerPhone,
-        notes: formData.notes,
-        paidAmount: formData.paidAmount,
-        dueDate: formData.dueDate,
         discountPercent: discount,
       });
 
@@ -174,9 +163,10 @@ export default function SellerPage() {
       setCart({});
       setDiscount(0);
       setIsModalOpen(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       const message =
-        error.response?.data?.error || "Sotuvda xatolik yuz berdi";
+        (error as { response?: { data?: { error?: string } } })?.response?.data
+          ?.error || "Sotuvda xatolik yuz berdi";
       showToast(message, "error");
     }
   };
@@ -367,7 +357,7 @@ export default function SellerPage() {
                     <div className="max-h-[400px] overflow-y-auto divide-y">
                       {Object.values(cart).length === 0 ? (
                         <div className="p-10 text-center text-gray-400 text-xs font-medium">
-                          Savat bo'sh
+                          {` Savat bo'sh`}
                         </div>
                       ) : (
                         Object.values(cart).map((item) => (
@@ -555,7 +545,7 @@ export default function SellerPage() {
                       {/* Final */}
                       <div className="flex justify-between items-center">
                         <span className="text-xs font-black text-gray-900 uppercase">
-                          To'lov:
+                          {`To'lov:`}
                         </span>
                         <span className="text-xl font-black text-gray-900">
                           {finalAmount.toLocaleString()} $

@@ -177,7 +177,7 @@ export default function AdminReports() {
               <span className="text-2xl text-slate-500">$</span>
             </h2>
             <p className="text-[10px] text-slate-500 mt-2">
-              Faqat to'langan puldan hisoblangan
+              {` Faqat to'langan puldan hisoblangan`}
             </p>
           </div>
 
@@ -202,7 +202,7 @@ export default function AdminReports() {
               <p className="text-xl font-bold text-emerald-400">
                 {totalPaid.toLocaleString()} $
               </p>
-              <p className="text-[10px] text-slate-600">Qo'ldagi pul</p>
+              <p className="text-[10px] text-slate-600">{`Qo'ldagi pul`}</p>
             </div>
             <div className="h-10 w-[1px] bg-slate-800 hidden md:block" />
             {/* Sotilgan tovar */}
@@ -318,7 +318,8 @@ export default function AdminReports() {
         <Card className="border border-red-100 shadow-none bg-white rounded-xl overflow-hidden">
           <CardHeader className="border-b border-red-50 bg-red-50/50">
             <CardTitle className="text-[11px] font-bold uppercase tracking-widest text-red-400 flex items-center gap-2">
-              <AlertCircle size={14} /> Sotuvchilar bo'yicha qarzlar
+              <AlertCircle size={14} />
+              {` Sotuvchilar bo'yicha qarzlar`}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-4 divide-y divide-slate-50">

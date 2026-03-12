@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { CreateSalePayload } from "@/interface/sale.type";
 
 interface CheckoutFormValues {
   customerName: string;
@@ -32,7 +33,7 @@ interface CheckoutFormValues {
 interface Props {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: CreateSalePayload) => void;
   totalAmount: number;
   discount: number;
   discountAmount: number;
@@ -131,15 +132,16 @@ export default function CheckoutModal({
     }
 
     onSubmit({
-      customerName: data.customerName,
-      customerPhone: data.customerPhone,
-      notes: data.notes,
+      orderId: "", // SellerPage da to'ldiriladi
+      items: [], // SellerPage da to'ldiriladi
+      customerName: data.customerName || undefined,
+      customerPhone: data.customerPhone || undefined,
+      notes: data.notes || undefined,
       paidAmount: Number(Number(data.paidAmount).toFixed(2)),
       dueDate: data.dueDate || null,
-      isNasiya: activeTab === "nasiya",
+      paymentType: activeTab,
       discountPercent: discount,
     });
-
     handleClose();
   };
 
@@ -155,7 +157,7 @@ export default function CheckoutModal({
         {/* Summa paneli */}
         <div className="rounded-lg border bg-slate-50 p-4 text-center space-y-1">
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-            To'lanishi kerak bo'lgan summa
+            {` To'lanishi kerak bo'lgan summa`}
           </span>
           <div className="text-4xl font-black text-slate-900">
             {netTotal.toLocaleString()}{" "}
@@ -262,7 +264,7 @@ export default function CheckoutModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-slate-500 uppercase">
-                To'langan
+                {` To'langan`}
               </label>
               <Input
                 {...register("paidAmount")}
@@ -295,7 +297,7 @@ export default function CheckoutModal({
           {activeTab === "nasiya" && (
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-slate-500 uppercase">
-                To'lov Muddati <span className="text-red-500">*</span>
+                {`To'lov Muddati`} <span className="text-red-500">*</span>
               </label>
               <Popover>
                 <PopoverTrigger asChild>

@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
+import { CustomerDetailResponse } from "@/interface/customer";
 
-// Mijoz detail
 export const useCustomerDetail = (id: string) => {
-  return useQuery({
+  return useQuery<CustomerDetailResponse>({
     queryKey: ["customer-detail", id],
     queryFn: async () => {
       const { data } = await api.get(`/customers/${id}`);
