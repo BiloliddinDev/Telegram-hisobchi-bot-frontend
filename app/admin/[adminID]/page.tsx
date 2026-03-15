@@ -33,14 +33,18 @@ import {
   Loader2,
   Trash2,
   AlertTriangle,
+  TrendingUp,
+  ShoppingBag,
+  AlertCircle,
 } from "lucide-react";
-import {useSellerDetail, useSellerDetailHistory} from "@/hooks/useSellerData";
+import { useSellerDetail, useSellerDetailHistory } from "@/hooks/useSellerData";
 import {
   useRemoveSellerStock,
   useSellerStocks,
   useUpdateStock,
 } from "@/hooks/useSellerStocks";
-import {ProductStockItem, SaleRecord} from "@/interface/seller-stock.type";
+import { ProductStockItem, SellerOrder } from "@/interface/seller-stock.type";
+import { GroupedOrder } from "@/interface/sale.type";
 import { toast } from "sonner";
 import {
   Drawer,
@@ -71,6 +75,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
@@ -87,31 +97,59 @@ export default function AdminSellerDetailPage() {
     null,
   );
 
-  
   const { data: stocksData, isLoading: stocksLoading } =
     useSellerStocks(sellerId);
   const { mutate: updateStock, isPending: isSaving } = useUpdateStock();
   const { mutate: removeStock, isPending: isRemoving } = useRemoveSellerStock();
-  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [activeTab, setActiveTab] = useState("inventory");
 
-  const formattedDate = date ? format(date, "yyyy-MM-dd") : undefined;
+  const formattedStart = startDate
+    ? format(startDate, "yyyy-MM-dd")
+    : undefined;
+  const formattedEnd = endDate ? format(endDate, "yyyy-MM-dd") : undefined;
 
-  const {
-    data: sellerData,
-    isLoading: sellerLoading,
-  } = useSellerDetail(sellerId);
+  const { data: sellerData, isLoading: sellerLoading } =
+    useSellerDetail(sellerId);
 
-
-  const {
-    data: sellerDataHistory,
-    isLoading: sellerHistoryLoading,
-  } = useSellerDetailHistory(sellerId, formattedDate);
+  const { data: sellerDataHistory, isLoading: sellerHistoryLoading } =
+    useSellerDetailHistory(sellerId, formattedStart, formattedEnd);
 
   const seller = sellerData?.seller;
   const stocks = stocksData?.sellerStocks || [];
   const salesHistory = sellerDataHistory?.sales || [];
-  const stats = sellerDataHistory?.stats;
+
+  const mappedSalesHistory: GroupedOrder[] = salesHistory.map(
+    (o: SellerOrder) => ({
+      orderId: o.orderId,
+      isCustomer: o.isCustomer,
+      customerId: o.customerId,
+      customerName: o.customerName,
+      customerPhone: o.customerPhone,
+      notes: o.notes || "",
+      timestamp: new Date(o.timestamp),
+      dueDate: o.dueDate ? new Date(o.dueDate) : undefined,
+      items: o.items.map((item) => ({
+        _id: item.saleId,
+        product: {
+          _id: "",
+          name: item.product.name,
+          price: item.price,
+          image: "",
+        },
+        quantity: item.quantity,
+        price: item.price,
+        totalAmount: item.totalAmount,
+      })),
+      totalAmount: o.totalAmount,
+      debt: o.debt,
+      paidAmount: o.paidAmount,
+      status: o.status,
+      rawTotal: o.rawTotal,
+      discountPercent: o.discountPercent,
+    }),
+  );
 
   const filteredStocks = stocks.filter((s) =>
     s.product.name.toLowerCase().includes(search.toLowerCase()),
@@ -179,7 +217,7 @@ export default function AdminSellerDetailPage() {
 
   if (sellerLoading || stocksLoading || sellerHistoryLoading) {
     return (
-      <div className="flex flex-col gap-6 p-6 animate-pulse mt-20">
+      <div className="flex container flex-col gap-6 p-6 animate-pulse mt-20">
         <div className="flex items-center gap-4">
           <Skeleton className="h-10 w-10 rounded-full" />
           <div className="space-y-2">
@@ -195,7 +233,7 @@ export default function AdminSellerDetailPage() {
 
   if (!seller) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+      <div className="flex container flex-col items-center justify-center min-h-[60vh] gap-4">
         <p className="text-sm font-bold text-slate-500 uppercase">{`Sotuvchi ma'lumotlarini yuklab bo'lmadi`}</p>
         <Button
           variant="outline"
@@ -206,7 +244,7 @@ export default function AdminSellerDetailPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-6 bg-background min-h-screen mt-20">
+    <div className="flex container flex-col gap-6 p-6 bg-background min-h-screen mt-20">
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -244,25 +282,30 @@ export default function AdminSellerDetailPage() {
         </div>
       </div>
 
-      <Tabs value={activeTab} defaultValue="inventory" onValueChange={setActiveTab} className="w-full">
+      <Tabs
+        value={activeTab}
+        defaultValue="inventory"
+        onValueChange={setActiveTab}
+        className="w-full"
+      >
         <div className="bg-white p-2 border rounded-sm shadow-sm mb-6 overflow-x-auto">
           <TabsList className="grid w-full grid-cols-3 sm:w-[600px] h-10 bg-slate-100 p-1 rounded-sm">
             <TabsTrigger
-                value="inventory"
-                className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-bold text-[11px] uppercase tracking-wider gap-2 rounded-sm"
+              value="inventory"
+              className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-bold text-[11px] uppercase tracking-wider gap-2 rounded-sm"
             >
               <Package size={14} className="text-primary" /> Maxsulotlar
             </TabsTrigger>
             <TabsTrigger
-                value="returns"
-                className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-bold text-[11px] uppercase tracking-wider gap-2 rounded-sm"
+              value="returns"
+              className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-bold text-[11px] uppercase tracking-wider gap-2 rounded-sm"
             >
               <ArrowLeftRight size={14} className="text-primary" /> Qaytarish
             </TabsTrigger>
             {/* YANGI TAB */}
             <TabsTrigger
-                value="history"
-                className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-bold text-[11px] uppercase tracking-wider gap-2 rounded-sm"
+              value="history"
+              className="data-[state=active]:bg-white data-[state=active]:shadow-sm font-bold text-[11px] uppercase tracking-wider gap-2 rounded-sm"
             >
               <History size={14} className="text-primary" /> Sotuvlar tarixi
             </TabsTrigger>
@@ -446,135 +489,316 @@ export default function AdminSellerDetailPage() {
           </Card>
         </TabsContent>
 
-
-        {/*{`3 qisim da korinsh kerke `}*/}
         <TabsContent value="history" className="mt-0 outline-none">
-          <Card className="rounded-sm border-slate-200 shadow-none overflow-hidden">
-            <CardHeader className="bg-slate-50/50 border-b">
-              <div className="flex flex-col md:flex-row justify-between md:items-start gap-4">
-                <div>
-                  <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-800">
-                    Sotuvlar tarixi
-                  </CardTitle>
-                  <CardDescription className="text-[10px] font-bold text-slate-400 uppercase mt-1">
-                    Sotuvchi tomonidan amalga oshirilgan tranzaksiyalar
-                  </CardDescription>
-                </div>
+          <div className="space-y-4">
+            {/* Sana filtri */}
+            <div className="flex items-center justify-end gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-[200px] justify-start text-left font-bold text-[11px] uppercase rounded-sm border-slate-200 shadow-sm",
+                      !startDate && "text-muted-foreground",
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4 text-primary" />
+                    {startDate ? (
+                      format(startDate, "dd.MM.yyyy")
+                    ) : (
+                      <span>Boshlanish sanasi</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 rounded-sm" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={setStartDate}
+                  />
+                  <div className="p-2 border-t flex justify-end">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-[10px] font-bold uppercase"
+                      onClick={() => setStartDate(undefined)}
+                    >
+                      Tozalash
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
 
-                <div className="flex flex-col items-end gap-2">
-                  {/* SANA TANLASH (CALENDAR) */}
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                          variant={"outline"}
-                          className={cn(
-                              "w-[240px] justify-start text-left font-bold text-[11px] uppercase rounded-sm border-slate-200 shadow-sm",
-                              !date && "text-muted-foreground"
-                          )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4 text-primary" />
-                        {date ? format(date, "dd.MM.yyyy") : <span>{`Sana bo'yicha saralash`}</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 rounded-sm" align="end">
-                      <Calendar
-                          mode="single"
-                          selected={date}
-                          onSelect={setDate}
-                      />
-                      <div className="p-2 border-t flex justify-end">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-[10px] font-bold uppercase"
-                            onClick={() => setDate(undefined)}
-                        >
-                          Tozalash
-                        </Button>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-[200px] justify-start text-left font-bold text-[11px] uppercase rounded-sm border-slate-200 shadow-sm",
+                      !endDate && "text-muted-foreground",
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4 text-primary" />
+                    {endDate ? (
+                      format(endDate, "dd.MM.yyyy")
+                    ) : (
+                      <span>Tugash sanasi</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 rounded-sm" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={setEndDate}
+                  />
+                  <div className="p-2 border-t flex justify-end">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-[10px] font-bold uppercase"
+                      onClick={() => setEndDate(undefined)}
+                    >
+                      Tozalash
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+
+              {(startDate || endDate) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-[10px] font-bold uppercase text-slate-400"
+                  onClick={() => {
+                    setStartDate(undefined);
+                    setEndDate(undefined);
+                  }}
+                >
+                  Barchasini tozalash
+                </Button>
+              )}
+            </div>
+
+            {/* 3 ta stat karta */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-white border border-gray-200 p-5 rounded-sm shadow-sm flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                    Jami sotuv
+                  </p>
+                  <h2 className="text-2xl font-black text-primary mt-1">
+                    {mappedSalesHistory
+                      .reduce((s, o) => s + o.totalAmount, 0)
+                      .toLocaleString()}{" "}
+                    $
+                  </h2>
+                  <p className="text-[10px] text-gray-400 mt-1">
+                    {mappedSalesHistory.length} ta order
+                  </p>
+                </div>
+                <div className="h-12 w-12 bg-primary/5 rounded-full flex items-center justify-center">
+                  <TrendingUp className="text-primary w-6 h-6" />
                 </div>
               </div>
 
-              
-              {date && stats && (
-                  <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-dashed border-slate-200">
-                    <div className=" p-3 rounded-sm border border-slate-200">
-                      <p className="text-[9px] font-black  uppercase">Kunlik jami summa</p>
-                      <p className="text-lg font-black ">
-                        {stats.totalSalesAmount?.toLocaleString()} $
+              <div className="bg-white border border-gray-200 p-5 rounded-sm shadow-sm flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                    Naqd tushum
+                  </p>
+                  <h2 className="text-2xl font-black text-green-600 mt-1">
+                    {mappedSalesHistory
+                      .reduce((s, o) => s + (o.paidAmount || 0), 0)
+                      .toLocaleString()}{" "}
+                    $
+                  </h2>
+                  <p className="text-[10px] text-gray-400 mt-1">{`Qo'ldagi pul`}</p>
+                </div>
+                <div className="h-12 w-12 bg-green-50 rounded-full flex items-center justify-center">
+                  <ShoppingBag className="text-green-500 w-6 h-6" />
+                </div>
+              </div>
+
+              {(() => {
+                const totalDebt = mappedSalesHistory.reduce(
+                  (s, o) => s + (o.debt || 0),
+                  0,
+                );
+                return (
+                  <div
+                    className={`bg-white border p-5 rounded-sm shadow-sm flex items-center justify-between ${totalDebt > 0 ? "border-red-200" : "border-gray-200"}`}
+                  >
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                        Qarzdorlar
+                      </p>
+                      <h2
+                        className={`text-2xl font-black mt-1 ${totalDebt > 0 ? "text-red-500" : "text-gray-400"}`}
+                      >
+                        {totalDebt.toLocaleString()} $
+                      </h2>
+                      <p className="text-[10px] text-gray-400 mt-1">
+                        {mappedSalesHistory.filter((o) => o.debt > 0).length} ta
+                        mijoz
                       </p>
                     </div>
-                    <div className=" p-3 rounded-sm border border-slate-200">
-                      <p className="text-[9px] font-black  uppercase">Sotilgan mahsulotlar</p>
-                      <p className="text-lg font-black ">
-                        {stats.totalQuantity} ta
-                      </p>
+                    <div
+                      className={`h-12 w-12 rounded-full flex items-center justify-center ${totalDebt > 0 ? "bg-red-50" : "bg-gray-50"}`}
+                    >
+                      <AlertCircle
+                        className={`w-6 h-6 ${totalDebt > 0 ? "text-red-400" : "text-gray-300"}`}
+                      />
                     </div>
                   </div>
-              )}
-            </CardHeader>
+                );
+              })()}
+            </div>
 
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader className="bg-slate-50/80">
-                  <TableRow>
-                    <TableHead className="text-[10px] font-black uppercase py-4 px-6">Mahsulot Nomi/SKU</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase py-4 px-6">Mijoz / Tel</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase py-4 px-6">Sana / Vaqt</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase py-4 px-6 text-center">Soni</TableHead>
-                    <TableHead className="text-[10px] font-black uppercase py-4 px-6 text-right">Jami summa</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {salesHistory.length > 0 ? (
-                      salesHistory.map((sale: SaleRecord) => (
-                          <TableRow key={sale._id} className="hover:bg-slate-50/50">
-                            <TableCell>
-                              <p className="text-xs font-black uppercase mb-2 text-slate-800 leading-none">
-                                {sale.product.name}
+            {/* Orderlar ro'yxati */}
+            <Card className="rounded-sm border-slate-200 shadow-none overflow-hidden">
+              <CardContent className="p-4">
+                {salesHistory.length > 0 ? (
+                  <Accordion type="single" collapsible className="space-y-2">
+                    {salesHistory.map((order: SellerOrder) => (
+                      <AccordionItem
+                        key={order.orderId}
+                        value={order.orderId}
+                        className="bg-white border border-gray-200 rounded-sm px-4 hover:border-primary/40 transition-colors"
+                      >
+                        <AccordionTrigger className="hover:no-underline py-4">
+                          <div className="flex justify-between items-start w-full mr-4">
+                            <div className="text-left space-y-1">
+                              <p className="font-black text-gray-900">
+                                {order.customerName || "Noma'lum mijoz"}
                               </p>
-                              <p className="font-black text-[10px] uppercase text-slate-400 leading-none">
-                                {sale.product.sku}
+                              <div className="flex items-center gap-3">
+                                {order.customerPhone && (
+                                  <div className="flex items-center gap-1 text-gray-400">
+                                    <Phone size={10} />
+                                    <span className="text-[11px]">
+                                      {order.customerPhone}
+                                    </span>
+                                  </div>
+                                )}
+                                <div className="flex items-center gap-1 text-gray-400">
+                                  <Package size={10} />
+                                  <span className="text-[11px] font-bold">
+                                    {order.items.length} xil mahsulot
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="text-right space-y-1">
+                              <p className="font-black text-primary text-lg">
+                                {order.totalAmount?.toLocaleString()} $
                               </p>
-                            </TableCell>
-                            <TableCell className="px-6 py-4">
-                              <p className="text-xs font-black uppercase text-slate-800 leading-none">
-                                {sale.customerName || "Noma'lum mijoz"}
+                              {order.debt > 0 ? (
+                                <span className="text-[10px] font-black text-red-500 block">
+                                  🔴 {order.debt?.toLocaleString()} $ qarz
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-black text-green-600 block">
+                                  ✅ {`To'liq to'langan`}
+                                </span>
+                              )}
+                              <div className="flex items-center gap-1 text-gray-400 justify-end">
+                                <span className="text-[10px]">
+                                  {new Date(
+                                    order.timestamp,
+                                  ).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </AccordionTrigger>
+
+                        <AccordionContent className="pb-4">
+                          <div className="space-y-2 pt-3 border-t border-dashed border-slate-100">
+                            {order.items.map((item, idx) => (
+                              <div
+                                key={idx}
+                                className="flex justify-between items-center py-2 border-b border-dashed border-gray-100 last:border-0"
+                              >
+                                <div>
+                                  <p className="font-bold text-[11px] text-gray-900 uppercase">
+                                    {item.product?.name}
+                                  </p>
+                                  <p className="text-[10px] text-gray-400">
+                                    {item.price?.toLocaleString()} $ ×{" "}
+                                    {item.quantity} ta
+                                  </p>
+                                </div>
+                                <Badge
+                                  variant="outline"
+                                  className="font-black text-primary border-primary/30"
+                                >
+                                  {item.totalAmount?.toLocaleString()} $
+                                </Badge>
+                              </div>
+                            ))}
+
+                            {order.discountPercent > 0 && (
+                              <div className="flex justify-between text-[10px] py-1 border-t border-dashed border-gray-100">
+                                <span className="font-bold uppercase text-gray-400">
+                                  Chegirma:
+                                </span>
+                                <span className="font-black text-green-600">
+                                  -{order.discountPercent}%
+                                </span>
+                              </div>
+                            )}
+
+                            <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                Jami:
+                              </span>
+                              <span className="text-xl font-black text-primary">
+                                {order.totalAmount?.toLocaleString()} $
+                              </span>
+                            </div>
+
+                            {order.paidAmount > 0 && order.debt > 0 && (
+                              <div className="flex justify-between items-center bg-green-50 px-3 py-2">
+                                <span className="text-[10px] font-black text-green-600 uppercase">{`✅ To'langan:`}</span>
+                                <span className="font-black text-green-600">
+                                  {order.paidAmount?.toLocaleString()} $
+                                </span>
+                              </div>
+                            )}
+
+                            {order.debt > 0 && (
+                              <div className="flex justify-between items-center bg-red-50 px-3 py-2">
+                                <span className="text-[10px] font-black text-red-500 uppercase">
+                                  🔴 Qarz:
+                                </span>
+                                <span className="font-black text-red-500">
+                                  {order.debt?.toLocaleString()} $
+                                </span>
+                              </div>
+                            )}
+
+                            {order.notes && (
+                              <p className="text-[11px] text-gray-400 italic border-t pt-2">
+                                📝 {order.notes}
                               </p>
-                              <p className="text-[10px] font-bold text-slate-400 mt-1">
-                                {sale.customerPhone || "Tel kiritilmagan"}
-                              </p>
-                            </TableCell>
-                            <TableCell className="px-6 py-4">
-                              <p className="text-[10px] font-bold text-slate-600 uppercase">
-                                {format(new Date(sale.createdAt || sale.timestamp), "HH:mm • dd.MM.yyyy")}
-                              </p>
-                            </TableCell>
-                            <TableCell className="px-6 py-4 text-center">
-                              <Badge variant="outline" className="font-black text-[10px] px-2 py-0.5 border-slate-200">
-                                {sale.quantity} TA
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="px-6 py-4 text-right">
-                              <p className="text-xs font-black text-slate-900">
-                                {sale.totalAmount?.toLocaleString()} $
-                              </p>
-                            </TableCell>
-                          </TableRow>
-                      ))
-                  ) : (
-                      <TableRow>
-                        <TableCell colSpan={4} className="h-32 text-center text-[10px] font-bold uppercase text-slate-400">
-                          {date ? "Ushbu sanada sotuvlar mavjud emas" : "Sotuvlar tarixi mavjud emas"}
-                        </TableCell>
-                      </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                            )}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                ) : (
+                  <div className="h-32 flex items-center justify-center text-[10px] font-bold uppercase text-slate-400">
+                    {startDate || endDate
+                      ? "Ushbu davrda sotuvlar mavjud emas"
+                      : "Sotuvlar tarixi mavjud emas"}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
 

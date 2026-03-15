@@ -49,6 +49,8 @@ export interface OrderItem {
 
 export interface GroupedOrder {
   orderId: string;
+  isCustomer: boolean;
+  customerId?: string;
   customerName: string;
   customerPhone: string;
   notes: string;

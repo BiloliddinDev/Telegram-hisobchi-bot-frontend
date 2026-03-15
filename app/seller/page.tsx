@@ -45,10 +45,8 @@ export default function SellerPage() {
   const [discount, setDiscount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [startDate, setStartDate] = useState<Date>(
-    new Date(new Date().setMonth(new Date().getMonth() - 1)),
-  );
-  const [endDate, setEndDate] = useState<Date>(new Date());
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [editingQty, setEditingQty] = useState<string | null>(null);
   const [editingQtyValue, setEditingQtyValue] = useState<string>("");
   const formatDateAPI = (date: Date): string => {
@@ -58,8 +56,14 @@ export default function SellerPage() {
     return `${year}-${month}-${day}`;
   };
   const [activeTab, setActiveTab] = useState("products");
-  const startStr = useMemo(() => formatDateAPI(startDate), [startDate]);
-  const endStr = useMemo(() => formatDateAPI(endDate), [endDate]);
+  const startStr = useMemo(
+    () => (startDate ? formatDateAPI(startDate) : undefined),
+    [startDate],
+  );
+  const endStr = useMemo(
+    () => (endDate ? formatDateAPI(endDate) : undefined),
+    [endDate],
+  );
 
   const { data: stockData, isLoading: stockLoading } = useSellerStocks();
   const { data: salesData, isLoading: salesLoading } = useSellerSalesHistory(
@@ -80,14 +84,6 @@ export default function SellerPage() {
       ) || [],
     [stockData, searchTerm],
   );
-
-  const totalHistoryAmount = useMemo(() => {
-    return salesData?.reduce((sum, sale) => sum + sale.totalAmount, 0) || 0;
-  }, [salesData]);
-
-  const totalHistoryCount = useMemo(() => {
-    return salesData?.length || 0;
-  }, [salesData]);
 
   const handleAddToCart = (stock: ProductStockItem) => {
     const current = cart[stock.product._id];
@@ -234,8 +230,9 @@ export default function SellerPage() {
                       className="h-8 text-[11px] font-bold uppercase hover:bg-slate-50"
                     >
                       <CalendarIcon className="mr-2 h-3.5 w-3.5 text-primary" />
-                      {format(startDate, "dd MMM", { locale: uz })} —{" "}
-                      {format(endDate, "dd MMM", { locale: uz })}
+                      {startDate && endDate
+                        ? `${format(startDate, "dd MMM", { locale: uz })} — ${format(endDate, "dd MMM", { locale: uz })}`
+                        : "Sanani tanlang"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent
@@ -262,7 +259,8 @@ export default function SellerPage() {
                         selected={endDate}
                         onSelect={(d) => d && setEndDate(d)}
                         disabled={(date) =>
-                          date < startDate || date > new Date()
+                          (startDate ? date < startDate : false) ||
+                          date > new Date()
                         }
                       />
                     </div>
@@ -575,12 +573,7 @@ export default function SellerPage() {
           </TabsContent>
 
           <TabsContent value="history" className="mt-0 outline-none space-y-4">
-            <SalesHistory
-              totalAmount={totalHistoryAmount}
-              totalCount={totalHistoryCount}
-              orders={salesData || []}
-              isLoading={salesLoading}
-            />
+            <SalesHistory orders={salesData || []} isLoading={salesLoading} />
           </TabsContent>
 
           <TabsContent value="customers">
