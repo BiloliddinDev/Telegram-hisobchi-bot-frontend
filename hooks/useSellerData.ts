@@ -18,13 +18,14 @@ export const useSellerStocks = () => {
   });
 };
 
-export const useSellerSalesHistory = (start: string, end: string) => {
+export const useSellerSalesHistory = (start?: string, end?: string) => {
   return useQuery<GroupedOrder[]>({
     queryKey: ["seller-sales-history", start, end],
     queryFn: async () => {
-      const { data } = await api.get("/seller/sales", {
-        params: { start, end },
-      });
+      const params: Record<string, string> = {};
+      if (start) params.start = start;
+      if (end) params.end = end;
+      const { data } = await api.get("/seller/sales", { params });
       return data.sales;
     },
   });
@@ -56,15 +57,20 @@ export const useSellerDetail = (id: string) => {
   });
 };
 
-export const useSellerDetailHistory = (sellerId: string, date?: string) => {
-  return useQuery({
-    queryKey: ["seller-detail", sellerId, date],
+export const useSellerDetailHistory = (
+  sellerId: string,
+  start?: string,
+  end?: string,
+) => {
+  return useQuery<SellerDetailResponse>({
+    queryKey: ["seller-detail", sellerId, start, end],
     queryFn: async () => {
+      const params: Record<string, string> = {};
+      if (start) params.start = start;
+      if (end) params.end = end;
       const { data } = await api.get<SellerDetailResponse>(
         `/admin/sellers/${sellerId}/sales`,
-        {
-          params: { date },
-        },
+        { params },
       );
       return data;
     },

@@ -1,13 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { GroupedOrder } from "@/interface/sale.type";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Phone,
   Calendar,
@@ -17,39 +20,31 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { HistorySkeleton } from "@/components/seller/SellerSkeleton";
+import ReturnDialog from "@/components/admin/ReturnDialog";
 
 interface Props {
   orders: GroupedOrder[];
   isLoading: boolean;
-  totalAmount: number;
-  totalCount: number;
 }
 
-export default function SalesHistory({
-  orders,
-  isLoading,
-  totalAmount,
-  totalCount,
-}: Props) {
+export default function SalesHistory({ orders, isLoading }: Props) {
+  const [returnOrder, setReturnOrder] = useState<GroupedOrder | null>(null);
+  const [activeTab, setActiveTab] = useState<"sold" | "returned">("sold");
+
   if (isLoading) return <HistorySkeleton />;
 
-  if (!orders?.length) {
-    return (
-      <div className="bg-white border border-gray-200 rounded-sm p-10 text-center text-gray-400 text-xs font-bold uppercase">
-        Sotuvlar topilmadi
-      </div>
-    );
-  }
+  const sold = orders.filter((o) => o.status !== "returned");
+  const returned = orders.filter((o) => o.status === "returned");
+  const list = activeTab === "sold" ? sold : returned;
 
-  // Hisob-kitob
-  const totalDebt = orders.reduce((sum, o) => sum + (o.debt || 0), 0);
-  const totalPaid = orders.reduce((sum, o) => sum + (o.paidAmount || 0), 0);
+  const totalAmount = sold.reduce((s, o) => s + o.totalAmount, 0);
+  const totalPaid = sold.reduce((s, o) => s + (o.paidAmount || 0), 0);
+  const totalDebt = sold.reduce((s, o) => s + (o.debt || 0), 0);
 
   return (
-    <div>
-      {/* Stats — 3 ta karta */}
-      <div className="grid grid-cols-3 gap-4 mb-4">
-        {/* 1. Jami sotuv */}
+    <div className="space-y-4">
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4">
         <div className="bg-white border border-gray-200 p-5 rounded-sm shadow-sm flex items-center justify-between">
           <div>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -59,7 +54,7 @@ export default function SalesHistory({
               {totalAmount.toLocaleString()} $
             </h2>
             <p className="text-[10px] text-gray-400 mt-1">
-              {totalCount} ta order
+              {sold.length} ta order
             </p>
           </div>
           <div className="h-12 w-12 bg-primary/5 rounded-full flex items-center justify-center">
@@ -67,7 +62,6 @@ export default function SalesHistory({
           </div>
         </div>
 
-        {/* 2. Naqd tushum */}
         <div className="bg-white border border-gray-200 p-5 rounded-sm shadow-sm flex items-center justify-between">
           <div>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -83,203 +77,240 @@ export default function SalesHistory({
           </div>
         </div>
 
-        {/* 3. Qarzlar */}
         <div
-          className={`bg-white border p-5 rounded-sm shadow-sm flex items-center justify-between ${
-            totalDebt > 0 ? "border-red-200" : "border-gray-200"
-          }`}
+          className={`bg-white border p-5 rounded-sm shadow-sm flex items-center justify-between ${totalDebt > 0 ? "border-red-200" : "border-gray-200"}`}
         >
           <div>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
               Qarzdorlar
             </p>
             <h2
-              className={`text-2xl font-black mt-1 ${
-                totalDebt > 0 ? "text-red-500" : "text-gray-400"
-              }`}
+              className={`text-2xl font-black mt-1 ${totalDebt > 0 ? "text-red-500" : "text-gray-400"}`}
             >
               {totalDebt.toLocaleString()} $
             </h2>
             <p className="text-[10px] text-gray-400 mt-1">
-              {orders.filter((o) => o.debt > 0).length} ta mijoz
+              {sold.filter((o) => o.debt > 0).length} ta mijoz
             </p>
           </div>
           <div
-            className={`h-12 w-12 rounded-full flex items-center justify-center ${
-              totalDebt > 0 ? "bg-red-50" : "bg-gray-50"
-            }`}
+            className={`h-12 w-12 rounded-full flex items-center justify-center ${totalDebt > 0 ? "bg-red-50" : "bg-gray-50"}`}
           >
             <AlertCircle
-              className={`w-6 h-6 ${
-                totalDebt > 0 ? "text-red-400" : "text-gray-300"
-              }`}
+              className={`w-6 h-6 ${totalDebt > 0 ? "text-red-400" : "text-gray-300"}`}
             />
           </div>
         </div>
       </div>
 
-      {/* Orders list */}
-      <Accordion type="single" collapsible className="space-y-2">
-        {orders.map((order) => (
-          <AccordionItem
-            key={order.orderId}
-            value={order.orderId}
-            className="bg-white border border-gray-200 rounded-sm px-4 hover:border-primary/40 transition-colors"
+      {/* Tab switcher */}
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as "sold" | "returned")}
+        className="w-fit"
+      >
+        <TabsList>
+          <TabsTrigger
+            value="sold"
+            className="gap-4 text-[16px] px-10  font-bold"
           >
-            <AccordionTrigger className="hover:no-underline py-4">
-              <div className="flex justify-between items-start w-full mr-4">
-                {/* Chap qism */}
-                <div className="text-left space-y-1">
-                  <p className="font-black text-gray-900">
-                    {order.customerName || "Noma'lum mijoz"}
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1 text-gray-400">
-                      <Phone size={10} />
-                      <span className="text-[11px]">
-                        {order.customerPhone || "—"}
-                      </span>
+            SOTILGAN
+            <Badge
+              variant={activeTab === "sold" ? "default" : "secondary"}
+              className="text-[10px] px-1.5 py-0 h-4"
+            >
+              {sold.length}
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger
+            value="returned"
+            className="gap-4 text-[16px] px-10  font-bold"
+          >
+            QAYTARILGAN
+            <Badge
+              variant={activeTab === "returned" ? "default" : "secondary"}
+              className={`text-[10px] px-1.5 py-0 h-4 `}
+            >
+              {returned.length}
+            </Badge>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {/* Orders list */}
+      {list.length === 0 ? (
+        <div className="bg-white border border-gray-200 rounded-sm p-10 text-center text-gray-400 text-xs font-bold uppercase">
+          {activeTab === "sold"
+            ? "Sotuvlar topilmadi"
+            : "Qaytarilgan buyurtmalar yo'q"}
+        </div>
+      ) : (
+        <Accordion type="single" collapsible className="space-y-2">
+          {list.map((order) => (
+            <AccordionItem
+              key={order.orderId}
+              value={order.orderId}
+              className="bg-white border border-gray-200 rounded-sm px-4 hover:border-primary/40 transition-colors"
+            >
+              <AccordionTrigger className="hover:no-underline py-4">
+                <div className="flex justify-between items-start w-full mr-4">
+                  <div className="text-left space-y-1">
+                    <p className="font-black text-gray-900">
+                      {order.customerName || "Noma'lum mijoz"}
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1 text-gray-400">
+                        <Phone size={10} />
+                        <span className="text-[11px]">
+                          {order.customerPhone || "—"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 text-gray-400">
+                        <Package size={10} />
+                        <span className="text-[11px] font-bold">
+                          {order.items.length} xil mahsulot
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1 text-gray-400">
-                      <Package size={10} />
-                      <span className="text-[11px] font-bold">
-                        {order.items.length} xil mahsulot
+                  </div>
+
+                  <div className="text-right space-y-1">
+                    <p className="font-black text-primary text-lg">
+                      {order.totalAmount.toLocaleString()} $
+                    </p>
+                    {order.status === "returned" ? (
+                      <span className="text-[10px] font-black text-orange-500 block">
+                        ↩ Qaytarilgan
+                      </span>
+                    ) : order.debt > 0 ? (
+                      <span className="text-[10px] font-black text-red-500 block">
+                        🔴 {order.debt.toLocaleString()} $ qarz
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-black text-green-600 block">
+                        ✅ {`To'liq to'langan`}
+                      </span>
+                    )}
+                    <div className="flex items-center gap-1 text-gray-400 justify-end">
+                      <Calendar size={10} />
+                      <span className="text-[10px]">
+                        {new Date(order.timestamp).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
                 </div>
+              </AccordionTrigger>
 
-                {/* O'ng qism */}
-                <div className="text-right space-y-1">
-                  <p className="font-black text-primary text-lg">
-                    {order.totalAmount.toLocaleString()} $
-                  </p>
-                  {order.debt > 0 ? (
-                    <span className="text-[10px] font-black text-red-500 block">
-                      🔴 {order.debt.toLocaleString()} $ qarz
-                    </span>
-                  ) : (
-                    <span className="text-[10px] font-black text-green-600 block">
-                      ✅ {`To'liq to'langan`}
-                    </span>
-                  )}
-                  <div className="flex items-center gap-1 text-gray-400 justify-end">
-                    <Calendar size={10} />
-                    <span className="text-[10px]">
-                      {new Date(order.timestamp).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </AccordionTrigger>
-
-            <AccordionContent className="pb-4">
-              <div className="space-y-2 pt-2 border-t border-dashed border-gray-100">
-                {/* Itemlar */}
-                {order.items.map((item) => (
-                  <div
-                    key={item._id}
-                    className="flex justify-between items-center py-2 border-b border-dashed border-gray-100 last:border-0"
-                  >
-                    <div>
-                      <p className="font-bold text-[11px] text-gray-900 uppercase">
-                        {item.product.name}
-                      </p>
-                      <p className="text-[10px] text-gray-400">
-                        {item.price.toLocaleString()} $ x {item.quantity} ta
-                      </p>
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className="font-black text-primary border-primary/30"
+              <AccordionContent className="pb-4">
+                <div className="space-y-2 pt-2 border-t border-dashed border-gray-100">
+                  {order.items.map((item) => (
+                    <div
+                      key={item._id}
+                      className="flex justify-between items-center py-2 border-b border-dashed border-gray-100 last:border-0"
                     >
-                      {item.totalAmount.toLocaleString()} $
-                    </Badge>
-                  </div>
-                ))}
+                      <div>
+                        <p className="font-bold text-[11px] text-gray-900 uppercase">
+                          {item.product.name}
+                        </p>
+                        <p className="text-[10px] text-gray-400">
+                          {item.price.toLocaleString()} $ x {item.quantity} ta
+                        </p>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className="font-black text-primary border-primary/30"
+                      >
+                        {item.totalAmount.toLocaleString()} $
+                      </Badge>
+                    </div>
+                  ))}
 
-                {/* Chegirma */}
-                {order.discountPercent > 0 && (
-                  <div className="space-y-1 py-1 border-b border-dashed border-gray-100">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] font-black text-gray-400 uppercase">
-                        Chegirmasiz:
-                      </span>
-                      <span className="text-[11px] font-black text-gray-400 line-through">
-                        {order.rawTotal.toLocaleString()} $
+                  {order.discountPercent > 0 && (
+                    <div className="space-y-1 py-1 border-b border-dashed border-gray-100">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-black text-gray-400 uppercase">
+                          Chegirmasiz:
+                        </span>
+                        <span className="text-[11px] font-black text-gray-400 line-through">
+                          {order.rawTotal.toLocaleString()} $
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-black text-gray-400 uppercase">
+                          Chegirma:
+                        </span>
+                        <span className="text-[11px] font-black text-green-600">
+                          -{order.discountPercent}% (-
+                          {(
+                            (Math.round(order.rawTotal * 100) -
+                              Math.round(order.totalAmount * 100)) /
+                            100
+                          ).toFixed(2)}{" "}
+                          $)
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                      Jami:
+                    </span>
+                    <span className="text-xl font-black text-primary">
+                      {order.totalAmount.toLocaleString()} $
+                    </span>
+                  </div>
+
+                  {order.paidAmount > 0 && order.debt > 0 && (
+                    <div className="flex justify-between items-center bg-green-50 px-3 py-2">
+                      <span className="text-[10px] font-black text-green-600 uppercase">{`✅ To'langan:`}</span>
+                      <span className="font-black text-green-600">
+                        {order.paidAmount.toLocaleString()} $
                       </span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] font-black text-gray-400 uppercase">
-                        Chegirma:
+                  )}
+
+                  {order.debt > 0 && (
+                    <div className="flex justify-between items-center bg-red-50 px-3 py-2">
+                      <span className="text-[10px] font-black text-red-500 uppercase">
+                        🔴 Qarz:
                       </span>
-                      <span className="text-[11px] font-black text-green-600">
-                        -{order.discountPercent}% (-
-                        {(
-                          (Math.round(order.rawTotal * 100) -
-                            Math.round(order.totalAmount * 100)) /
-                          100
-                        ).toFixed(2)}{" "}
-                        $)
+                      <span className="font-black text-red-500">
+                        {order.debt.toLocaleString()} $
                       </span>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Jami */}
-                <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                    Jami:
-                  </span>
-                  <span className="text-xl font-black text-primary">
-                    {order.totalAmount.toLocaleString()} $
-                  </span>
+                  {order.notes && (
+                    <p className="text-[11px] text-gray-400 italic border-t pt-2">
+                      📝 {order.notes}
+                    </p>
+                  )}
+
+                  {activeTab === "sold" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full mt-2"
+                      onClick={() => setReturnOrder(order)}
+                    >
+                      Tovarni qaytarish
+                    </Button>
+                  )}
                 </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      )}
 
-                {/* To'langan */}
-                {order.paidAmount > 0 && order.debt > 0 && (
-                  <div className="flex justify-between items-center bg-green-50 px-3 py-2">
-                    <span className="text-[10px] font-black text-green-600 uppercase">
-                      {`✅ To'langan:`}
-                    </span>
-                    <span className="font-black text-green-600">
-                      {order.paidAmount.toLocaleString()} $
-                    </span>
-                  </div>
-                )}
-
-                {/* Qarz */}
-                {order.debt > 0 && (
-                  <div className="flex justify-between items-center bg-red-50 px-3 py-2">
-                    <span className="text-[10px] font-black text-red-500 uppercase">
-                      🔴 Qarz:
-                    </span>
-                    <span className="font-black text-red-500">
-                      {order.debt.toLocaleString()} $
-                    </span>
-                  </div>
-                )}
-
-                {/* Notes */}
-                {order.notes && (
-                  <p className="text-[11px] text-gray-400 italic border-t pt-2">
-                    📝 {order.notes}
-                  </p>
-                )}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
+      <ReturnDialog
+        order={returnOrder}
+        open={!!returnOrder}
+        onOpenChange={(open) => {
+          if (!open) setReturnOrder(null);
+        }}
+      />
     </div>
   );
 }
-// ```
-
-// Natija:
-// ```
-// ┌─────────────┬─────────────┬─────────────┐
-// │ Jami sotuv  │ Naqd tushum │  Qarzdorlar │
-// │  482.82 $   │  251.82 $   │   231.00 $  │
-// │  3 ta order │ Qo'ldagi pul│  2 ta mijoz │
-// └─────────────┴─────────────┴─────────────┘

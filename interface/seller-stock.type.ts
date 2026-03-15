@@ -72,7 +72,7 @@ export interface SaleRecord {
   product: {
     name : string;
     sku: string;
-  }; // Agar backend populate qilmasa string keladi
+  };
   quantity: number;
   price: number;
   totalAmount: number;
@@ -80,6 +80,37 @@ export interface SaleRecord {
   customerPhone: string;
   timestamp: string;
   createdAt: string;
+}
+
+export interface SellerOrderItem {
+  saleId: string;
+  product: {
+    _id?: string;
+    name: string;
+    sku: string;
+  };
+  quantity: number;
+  price: number;
+  costPrice: number;
+  totalAmount: number;
+}
+
+export interface SellerOrder {
+  orderId: string;
+  isCustomer: boolean;
+  customerId?: string;
+  customerName: string;
+  customerPhone: string;
+  notes?: string;
+  timestamp: string;
+  items: SellerOrderItem[];
+  totalAmount: number;
+  rawTotal: number;
+  discountPercent: number;
+  debt: number;
+  paidAmount: number;
+  status: string;
+  dueDate?: string;
 }
 
 export interface Seller {
@@ -94,11 +125,16 @@ export interface Seller {
 
 
 export interface SellerDetailResponse {
-  sales:  SaleRecord[];
+  sales: SellerOrder[];
   stats: {
-    totalSalesAmount: number;
-    totalQuantity: number;
-    count: number;
+    totalSales: number;
+    totalRevenue: number;
+    totalCost: number;
+    netProfit: number;
+    totalDebt: number;
+    totalPaid: number;
+    warehouseStockValue: number;
+    sellerStockValue: number;
   };
   message?: string;
 }
