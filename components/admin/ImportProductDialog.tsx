@@ -11,17 +11,32 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { FileUp, Download } from "lucide-react";
+import { FileUp, Download, Info, Settings2 } from "lucide-react";
 import { useState, useRef } from "react";
 import { useImportProducts } from "@/hooks/useProducts";
 import { useToast } from "@/hooks/useToast";
 import axios from "axios";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+
+interface ImportResponse {
+  importedCount: number;
+  skippedCount: number;
+  errorsCount: number;
+}
 
 export function ImportProductDialog() {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [priceAdjustmentMode, setPriceAdjustmentMode] = useState<string>("FIXED");
+  const [priceAdjustmentValue, setPriceAdjustmentValue] = useState<string>("0");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { mutate: importProducts, isPending } = useImportProducts();
   const { showToast } = useToast();
@@ -40,9 +55,11 @@ export function ImportProductDialog() {
 
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("priceAdjustmentMode", priceAdjustmentMode);
+    formData.append("priceAdjustmentValue", priceAdjustmentValue);
 
     importProducts(formData, {
-      onSuccess: (data: any) => {
+      onSuccess: (data: ImportResponse) => {
         showToast(`Muvaffaqiyatli import qilindi: ${data.importedCount} ta`, "success");
         if (data.skippedCount > 0) {
           showToast(`${data.skippedCount} ta o'tkazib yuborildi (Dublikat)`, "info");
@@ -86,18 +103,57 @@ export function ImportProductDialog() {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4 py-4">
+        <div className="flex flex-col gap-5 py-4">
           <Alert className="bg-blue-50 text-blue-800 border-blue-200">
             <Info className="h-4 w-4 !text-blue-800" />
             <AlertTitle className="font-bold">Eslatma!</AlertTitle>
             <AlertDescription className="text-xs leading-5 mt-1">
               <ul className="list-disc pl-4 space-y-1">
-                <li><b>Name, Price va Category</b> ustunlarini to'ldirish majburiy.</li>
-                <li>Bazada xuddi shu nomdagi yoki SKU idagi mahsulot mavjud bo'lsa, u <b>o'tkazib yuboriladi</b> (dublikat sifatida).</li>
-                <li>Yangi kiritilgan kategoriyalar avtomat ravishda yaratiladi.</li>
+                <li><b>Name, Category va CostPrice</b> ustunlarini to&apos;ldirish majburiy.</li>
+                <li><b>Price</b> ustuni bo&apos;sh bo&apos;lsa, u quyidagi sozlamalar asosida <b>CostPrice</b> dan hisoblanadi.</li>
+                <li>Bazada xuddi shu nomdagi yoki SKU idagi mahsulot mavjud bo&apos;lsa, u <b>o&apos;tkazib yuboriladi</b> (dublikat sifatida).</li>
               </ul>
             </AlertDescription>
           </Alert>
+
+          <div className="space-y-4 border p-4 rounded-md bg-gray-50/50">
+            <div className="flex items-center gap-2 text-sm font-bold text-gray-700 uppercase tracking-tighter">
+              <Settings2 size={16} className="text-primary" />
+              Narxni hisoblash sozlamalari
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="adjustment-mode" className="text-xs font-semibold">Hisoblash turi</Label>
+                <Select value={priceAdjustmentMode} onValueChange={setPriceAdjustmentMode}>
+                  <SelectTrigger id="adjustment-mode" className="h-9 text-xs">
+                    <SelectValue placeholder="Tanlang" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="FIXED">Qiymat qo&apos;shish ($)</SelectItem>
+                    <SelectItem value="PERCENTAGE">Foiz qo&apos;shish (%)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="adjustment-value" className="text-xs font-semibold">
+                  {priceAdjustmentMode === "FIXED" ? "Qoshiladigan qiymat ($)" : "Qoshiladigan foiz (%)"}
+                </Label>
+                <Input
+                  id="adjustment-value"
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  value={priceAdjustmentValue}
+                  onChange={(e) => setPriceAdjustmentValue(e.target.value)}
+                  className="h-9 text-xs"
+                />
+              </div>
+            </div>
+            <p className="text-[10px] text-muted-foreground italic leading-relaxed">
+              * Agar Excelda narx (Price) ko&apos;rsatilgan bo&apos;lsa, ushbu sozlama inobatga olinmaydi.
+            </p>
+          </div>
 
           <div className="flex justify-between items-center bg-gray-50 border p-3 rounded-md">
             <span className="text-sm font-medium text-gray-700">Namuna fayl (Shablon)</span>

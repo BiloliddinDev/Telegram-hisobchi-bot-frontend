@@ -12,6 +12,7 @@ import { TabsContent, Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import { CreateCategoryDialog } from "./CreateCategoryDialog";
 import { CreateProductDialog } from "./CreateProductDialog";
 import { ImportProductDialog } from "./ImportProductDialog";
+import { ImportWarehouseQuantityDialog } from "./ImportWarehouseQuantityDialog";
 import { useProducts, useCategories } from "@/hooks/useProducts";
 import { ProductTable } from "./ProductTable";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -80,6 +81,7 @@ export default function TabsProducts() {
 
           <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 scrollbar-hide">
             <ImportProductDialog />
+            <ImportWarehouseQuantityDialog />
             <CreateCategoryDialog />
             <CreateProductDialog />
           </div>
