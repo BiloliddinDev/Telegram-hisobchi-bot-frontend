@@ -43,6 +43,41 @@ export const useCreateProduct = () => {
   });
 };
 
+export const useImportProducts = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (formData: FormData) => {
+      const { data } = await api.post("/products/import", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
+  });
+};
+
+export const useImportWarehouseQuantity = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (formData: FormData) => {
+      const { data } = await api.post("/products/warehouse/update", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+};
+
 export const useUpdateProduct = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -54,6 +89,25 @@ export const useUpdateProduct = () => {
       data: ProductUpdateInput;
     }) => {
       const response = await api.put(`/products/${id}`, data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+};
+
+export const usePatchProduct = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<ProductUpdateInput>;
+    }) => {
+      const response = await api.patch(`/products/${id}`, data);
       return response.data;
     },
     onSuccess: () => {
