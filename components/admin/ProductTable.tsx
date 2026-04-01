@@ -8,6 +8,7 @@ import { useDeleteProduct, usePatchProduct } from "@/hooks/useProducts";
 import { useToast } from "@/hooks/useToast";
 import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
+import axios from "axios";
 
 interface ProductTableProps {
   products: Product[];
@@ -47,7 +48,7 @@ export function ProductTable({ products }: ProductTableProps) {
     }
   };
 
-  const startEditing = (id: string, field: keyof ProductUpdateInput, initialValue: any) => {
+  const startEditing = (id: string, field: keyof ProductUpdateInput, initialValue: string | number | null | undefined) => {
     setEditingCell({ id, field });
     setEditValue(String(initialValue ?? ""));
   };
@@ -72,7 +73,7 @@ export function ProductTable({ products }: ProductTableProps) {
     }
 
     // Check if value actually changed
-    const currentValue = (product as any)[field];
+    const currentValue = product[field as keyof Product] as string | number | undefined;
     if (currentValue === newValue) {
         setEditingCell(null);
         return;
@@ -86,8 +87,13 @@ export function ProductTable({ products }: ProductTableProps) {
           showToast(`${field} yangilandi`, "success");
           setIsUpdating(null);
         },
-        onError: (err: any) => {
-          const errMsg = err?.response?.data?.error || "Xatolik yuz berdi";
+        onError: (err: unknown) => {
+          let errMsg = "Xatolik yuz berdi";
+          if (axios.isAxiosError<{ error: string }>(err)) {
+            errMsg = err.response?.data?.error || err.message;
+          } else if (err instanceof Error) {
+            errMsg = err.message;
+          }
           showToast(errMsg, "error");
           setIsUpdating(null);
         },
@@ -127,7 +133,7 @@ export function ProductTable({ products }: ProductTableProps) {
     return (
       <td 
         className={`p-4 align-middle group cursor-pointer relative ${isNumeric ? "text-right" : ""}`}
-        onDoubleClick={() => startEditing(product._id, field, (product as any)[field === "warehouseQuantity" ? "warehouseQuantity" : field])}
+        onDoubleClick={() => startEditing(product._id, field, product[field as keyof Product] as string | number | undefined)}
       >
         <div className="flex items-center justify-between gap-1">
           {displayValue}
