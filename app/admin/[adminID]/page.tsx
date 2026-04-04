@@ -83,6 +83,7 @@ import {
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { ImportTransferDialog } from "@/components/admin/ImportTransferDialog";
 
 export default function AdminSellerDetailPage() {
   const router = useRouter();
@@ -320,14 +321,20 @@ export default function AdminSellerDetailPage() {
                   <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-800">{`Sotuvchi qo'lidagi mahsulotlar`}</CardTitle>
                   <CardDescription className="text-[10px] font-bold text-slate-400 uppercase mt-1">{`Miqdorni qo'shish yoki ayirish uchun mahsulot ustiga bosing`}</CardDescription>
                 </div>
-                <div className="relative w-full md:w-72">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <Input
-                    placeholder="Mahsulotlarni qidirish..."
-                    className="pl-10 h-10 rounded-sm border-slate-200 bg-white shadow-none"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                  <ImportTransferDialog
+                    sellerIdentifier={seller._id}
+                    sellerName={`${seller.firstName} ${seller.lastName}`}
                   />
+                  <div className="relative w-full md:w-72">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input
+                      placeholder="Mahsulotlarni qidirish..."
+                      className="pl-10 h-10 rounded-sm border-slate-200 bg-white shadow-none"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
             </CardHeader>
@@ -884,7 +891,7 @@ export default function AdminSellerDetailPage() {
                   {mode === "plus"
                     ? (selectedStock?.product.warehouseQuantity || 0) - diff
                     : (selectedStock?.product.warehouseQuantity || 0) +
-                      diff}{" "}
+                    diff}{" "}
                   ta
                 </span>
               </div>
