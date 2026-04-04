@@ -57,3 +57,23 @@ export const useReturnTransfer = () => {
     },
   });
 };
+
+export const useImportTransfers = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (formData: FormData) => {
+      const { data } = await api.post("/transfers/import", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transfers"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["sellerStocks"] });
+      queryClient.invalidateQueries({ queryKey: ["analytics"] });
+    },
+  });
+};

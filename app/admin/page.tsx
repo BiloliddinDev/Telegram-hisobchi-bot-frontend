@@ -18,6 +18,7 @@ import AdminHeader from "@/components/admin/AdminHeader";
 import TabsProducts from "@/components/admin/TabsProducts";
 import AdminSellers from "@/components/admin/AdminSellers";
 import AdminReports from "@/components/admin/AdminReports";
+import { ImportTransferDialog } from "@/components/admin/ImportTransferDialog";
 
 export default function AdminPage() {
   const router = useRouter();
@@ -54,10 +55,15 @@ export default function AdminPage() {
           <TabsContent value="assign" className="mt-4 space-y-8">
             <Card>
               <CardHeader>
-                <CardTitle>Mahsulotlarni taqsimlash</CardTitle>
-                <CardDescription>
-                  Ombordan sotuvchilarga mahsulot biriktirish
-                </CardDescription>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle>Mahsulotlarni taqsimlash</CardTitle>
+                    <CardDescription>
+                      Ombordan sotuvchilarga mahsulot biriktirish
+                    </CardDescription>
+                  </div>
+                  <ImportTransferDialog />
+                </div>
               </CardHeader>
               <CardContent>
                 <StockTransferModule />
