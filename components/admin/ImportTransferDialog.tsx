@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { FileUp, Download, Info, CheckCircle2, AlertCircle } from "lucide-react";
+import { FileUp, Download, Info, CheckCircle2 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useImportTransfers } from "@/hooks/useTransfers";
 import { useSellers } from "@/hooks/useAdminData";
