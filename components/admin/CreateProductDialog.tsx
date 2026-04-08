@@ -22,13 +22,11 @@ import axios from "axios";
 
 interface ProductFormValues {
   name: string;
-  description: string;
   price: number;
   costPrice: number;
   category: string;
   warehouseQuantity: number;
   sku: string;
-  color: string;
 }
 
 export function CreateProductDialog() {
@@ -42,13 +40,11 @@ export function CreateProductDialog() {
     // Map form values to ProductCreateInput
     const productData: ProductCreateInput = {
       name: data.name,
-      description: data.description,
       price: data.price,
       costPrice: data.costPrice,
-      category: data.category, // This is already a string (category ID)
+      category: data.category,
       warehouseQuantity: data.warehouseQuantity,
       sku: data.sku,
-      color: data.color,
     };
 
     createProduct(productData, {
@@ -87,10 +83,6 @@ export function CreateProductDialog() {
               <Label htmlFor="name">Nomi</Label>
               <Input id="name" {...register("name", { required: true })} />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="description">Tavsif</Label>
-              <Input id="description" {...register("description")} />
-            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="costPrice">Tan narxi</Label>
@@ -117,15 +109,9 @@ export function CreateProductDialog() {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="sku">SKU / Maxsus nom</Label>
-                <Input id="sku" {...register("sku")} />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="color">Rang</Label>
-                <Input id="color" {...register("color")} />
-              </div>
+            <div className="grid gap-2">
+              <Label htmlFor="sku">SKU / Maxsus nom</Label>
+              <Input id="sku" {...register("sku")} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="category">Kategoriya</Label>

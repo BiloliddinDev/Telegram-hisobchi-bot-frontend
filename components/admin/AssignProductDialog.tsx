@@ -69,7 +69,7 @@ export function AssignProductDialog({ product }: { product: Product }) {
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
             <DialogTitle>Mahsulotni biriktirish</DialogTitle>
-            <CardDescription>{product.name}</CardDescription>
+            <CardDescription>{product.sku || product.name}</CardDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">

@@ -240,7 +240,7 @@ export function StockTransferModule() {
                       <CardContent className="p-4">
                         <div className="flex justify-between items-start mb-2">
                           <p className="text-xs font-black uppercase text-slate-800 line-clamp-1">
-                            {product.name}
+                            {product.sku || product.name}
                           </p>
                           <Badge className="bg-slate-100 text-slate-500">
                             {product.category.name}
@@ -300,7 +300,7 @@ export function StockTransferModule() {
                     </div>
                     <div>
                       <p className="text-xs font-black uppercase text-slate-800">
-                        {item.product.name}
+                        {item.product.sku || item.product.name}
                       </p>
                       <p className="text-[10px] font-bold text-slate-400 uppercase">
                         Maksimal:{" "}
@@ -414,7 +414,7 @@ export function StockTransferModule() {
                       className="p-3 flex justify-between items-center"
                     >
                       <p className="text-xs font-bold text-slate-700 uppercase">
-                        {item.product.name}
+                        {item.product.sku || item.product.name}
                       </p>
                       <span className="text-xs font-black bg-slate-100 px-2.5 py-1 rounded-sm">
                         {item.quantity} ta

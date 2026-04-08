@@ -109,7 +109,8 @@ export function ImportProductDialog() {
             <AlertTitle className="font-bold">Eslatma!</AlertTitle>
             <AlertDescription className="text-xs leading-5 mt-1">
               <ul className="list-disc pl-4 space-y-1">
-                <li><b>Name, Category va CostPrice</b> ustunlarini to&apos;ldirish majburiy.</li>
+                <li><b>SKU, va CostPrice</b> ustunlarini to&apos;ldirish majburiy.</li>
+                <li>Agar <b>Category</b> bosh qolsa auto <b>Umumiy</b> categoryga qoshiladi !</li>
                 <li><b>Price</b> ustuni bo&apos;sh bo&apos;lsa, u quyidagi sozlamalar asosida <b>CostPrice</b> dan hisoblanadi.</li>
                 <li>Bazada xuddi shu nomdagi yoki SKU idagi mahsulot mavjud bo&apos;lsa, u <b>o&apos;tkazib yuboriladi</b> (dublikat sifatida).</li>
               </ul>

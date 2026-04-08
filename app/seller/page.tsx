@@ -79,8 +79,8 @@ export default function SellerPage() {
     () =>
       stockData?.sellerStocks.filter(
         (s) =>
-          s.product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          s.product.sku?.toLowerCase().includes(searchTerm.toLowerCase()),
+          s.product.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          s.product.name.toLowerCase().includes(searchTerm.toLowerCase()),
       ) || [],
     [stockData, searchTerm],
   );
@@ -304,15 +304,8 @@ export default function SellerPage() {
                           <div className="flex justify-between items-start">
                             <div>
                               <h3 className="font-bold text-sm text-gray-900 line-clamp-2">
-                                {stock.product.sku}
+                                {stock.product.sku || stock.product.name}
                               </h3>
-                              <p
-                                className={
-                                  "font-bold  text-gray-900 line-clamp-2"
-                                }
-                              >
-                                {stock.product.name}
-                              </p>
                             </div>
                             {cart[stock.product._id] && (
                               <Badge className="bg-primary text-white ml-2">
@@ -365,7 +358,7 @@ export default function SellerPage() {
                           >
                             <div className="flex justify-between">
                               <p className="text-[11px] font-bold line-clamp-1 flex-1 uppercase">
-                                {item.stock.product.name}
+                                {item.stock.product.sku || item.stock.product.name}
                               </p>
                               <button
                                 className="text-gray-400 hover:text-red-500"

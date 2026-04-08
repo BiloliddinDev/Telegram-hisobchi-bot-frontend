@@ -28,6 +28,7 @@ interface ItemState {
   productName: string;
   maxQty: number;
   price: number;
+  unitPrice: number; // discount qo'llanilgan narx (totalAmount / quantity)
   selected: boolean;
   quantity: number;
 }
@@ -49,9 +50,10 @@ export default function ReturnDialog({ order, open, onOpenChange }: Props) {
       setItems(
         order.items.map((item: OrderItem) => ({
           saleId: item._id,
-          productName: item.product.name,
+          productName: item.product.sku || item.product.name,
           maxQty: item.quantity,
           price: item.price,
+          unitPrice: item.quantity > 0 ? item.totalAmount / item.quantity : item.price,
           selected: true,
           quantity: item.quantity,
         })),
@@ -67,7 +69,7 @@ export default function ReturnDialog({ order, open, onOpenChange }: Props) {
   const isReturned = order.status === "returned";
 
   const selectedItems = items.filter((i) => i.selected && i.quantity > 0);
-  const totalBack = selectedItems.reduce((s, i) => s + i.price * i.quantity, 0);
+  const totalBack = selectedItems.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
 
   const toggleItem = (saleId: string) => {
     setItems((prev) =>
@@ -187,7 +189,15 @@ export default function ReturnDialog({ order, open, onOpenChange }: Props) {
                   <label htmlFor={item.saleId} className="cursor-pointer">
                     <p className="text-sm font-medium">{item.productName}</p>
                     <p className="text-xs text-muted-foreground">
-                      {item.price.toLocaleString()} $ / dona
+                      {item.unitPrice !== item.price ? (
+                        <>
+                          <span className="line-through mr-1">{item.price.toLocaleString()} $</span>
+                          <span className="text-green-600 font-medium">{item.unitPrice.toLocaleString()} $</span>
+                          {" / dona"}
+                        </>
+                      ) : (
+                        <>{item.price.toLocaleString()} $ / dona</>
+                      )}
                     </p>
                   </label>
                 </div>

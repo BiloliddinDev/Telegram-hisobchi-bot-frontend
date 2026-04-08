@@ -159,14 +159,11 @@ export function ProductTable({ products }: ProductTableProps) {
               <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">
                 SKU
               </th>
-              <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">
-                Nomi
-              </th>
+              {/*<th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">*/}
+              {/*  Nomi*/}
+              {/*</th>*/}
               <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">
                 Kategoriya
-              </th>
-              <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">
-                Rangi
               </th>
               <th className="h-10 px-4 text-right align-middle font-medium text-muted-foreground">
                 Tan narxi
@@ -192,9 +189,8 @@ export function ProductTable({ products }: ProductTableProps) {
                   {index + 1}
                 </td>
                 {renderCell(product, "sku", <span className="font-mono text-xs">{product.sku || "-"}</span>)}
-                {renderCell(product, "name", <div className="font-medium">{product.name}</div>)}
+                {/*{renderCell(product, "name", <div className="font-medium">{product.name}</div>)}*/}
                 <td className="p-4 align-middle">{product.category.name}</td>
-                {renderCell(product, "color", <div>{product.color || "-"}</div>)}
                 {renderCell(product, "costPrice", <span>{"$" + (product.costPrice || 0).toLocaleString()}</span>, true)}
                 {renderCell(product, "price", <span className="font-semibold text-green-600">{"$" + (product.price || 0).toLocaleString()}</span>, true)}
                 {renderCell(product, "warehouseQuantity", (

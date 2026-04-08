@@ -3,14 +3,11 @@ import { Category } from "@/interface/category.type";
 export interface Product {
   _id: string;
   name: string;
-  description: string;
   price: number;
   costPrice: number;
   category: Category;
   sku: string;
-  color: string;
   warehouseQuantity: number;
-  image: string;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date | null;
@@ -18,26 +15,20 @@ export interface Product {
 
 export interface ProductCreateInput {
   name: string;
-  description?: string;
   price: number;
   costPrice: number;
-  category: string; // Category ID as string
+  category: string;
   sku?: string;
-  color?: string;
-  warehouseQuantity: number; // Maps to count in Product
-  image?: string;
+  warehouseQuantity: number;
 }
 
 export interface ProductUpdateInput {
   name?: string;
-  description?: string;
   price?: number;
   costPrice?: number;
-  category?: string; // Category ID as string
+  category?: string;
   sku?: string;
-  color?: string;
   warehouseQuantity?: number;
-  image?: string;
   assignedSellers?: string[];
   isActive?: boolean;
 }
