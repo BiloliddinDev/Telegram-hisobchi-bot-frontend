@@ -26,13 +26,11 @@ interface EditProductDialogProps {
 
 interface ProductFormValues {
   name: string;
-  description: string;
   price: number;
   costPrice: number;
   category: string;
   warehouseQuantity: number;
   sku: string;
-  color: string;
 }
 
 export function EditProductDialog({ product }: EditProductDialogProps) {
@@ -40,13 +38,11 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
   const { register, handleSubmit } = useForm<ProductFormValues>({
     defaultValues: {
       name: product.name,
-      description: product.description,
       price: product.price,
       costPrice: product.costPrice,
       category: product.category._id,
       warehouseQuantity: product.warehouseQuantity,
       sku: product.sku,
-      color: product.color,
     },
   });
 
@@ -58,13 +54,11 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
     // Map form values to ProductUpdateInput
     const productData: ProductUpdateInput = {
       name: data.name,
-      description: data.description,
       price: data.price,
       costPrice: data.costPrice,
-      category: data.category, // This is already a string (category ID)
-      warehouseQuantity: data.warehouseQuantity, // Map stock to count
+      category: data.category,
+      warehouseQuantity: data.warehouseQuantity,
       sku: data.sku,
-      color: data.color,
     };
 
     updateProduct(
@@ -104,10 +98,6 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
               <Label htmlFor="edit-name">Nomi</Label>
               <Input id="edit-name" {...register("name", { required: true })} />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="edit-description">Tavsif</Label>
-              <Input id="edit-description" {...register("description")} />
-            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="edit-costPrice">Tan narxi</Label>
@@ -134,15 +124,9 @@ export function EditProductDialog({ product }: EditProductDialogProps) {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="edit-sku">SKU / Maxsus nom</Label>
-                <Input id="edit-sku" {...register("sku")} />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="edit-color">Rang</Label>
-                <Input id="edit-color" {...register("color")} />
-              </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-sku">SKU / Maxsus nom</Label>
+              <Input id="edit-sku" {...register("sku")} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-category">Kategoriya</Label>

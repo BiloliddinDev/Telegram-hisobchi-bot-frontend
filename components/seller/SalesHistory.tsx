@@ -33,8 +33,16 @@ export default function SalesHistory({ orders, isLoading }: Props) {
 
   if (isLoading) return <HistorySkeleton />;
 
+  // Order'da qaytarilgan itemlar bormi tekshirish
+  const hasReturnedItems = (order: GroupedOrder) =>
+    order.items.some((i) => i.status === "returned");
+
+  // SOTILGAN: to'liq qaytarilganlardan tashqari hamma order
   const sold = orders.filter((o) => o.status !== "returned");
-  const returned = orders.filter((o) => o.status === "returned");
+  // QAYTARILGAN: to'liq qaytarilgan + qisman qaytarilgan orderlar
+  const returned = orders.filter(
+    (o) => o.status === "returned" || hasReturnedItems(o),
+  );
   const list = activeTab === "sold" ? sold : returned;
 
   const totalAmount = sold.reduce((s, o) => s + o.totalAmount, 0);
@@ -180,7 +188,11 @@ export default function SalesHistory({ orders, isLoading }: Props) {
                     </p>
                     {order.status === "returned" ? (
                       <span className="text-[10px] font-black text-orange-500 block">
-                        ↩ Qaytarilgan
+                        {"↩ To'liq qaytarilgan"}
+                      </span>
+                    ) : hasReturnedItems(order) ? (
+                      <span className="text-[10px] font-black text-orange-400 block">
+                        ↩ Qisman qaytarilgan
                       </span>
                     ) : order.debt > 0 ? (
                       <span className="text-[10px] font-black text-red-500 block">
@@ -203,27 +215,40 @@ export default function SalesHistory({ orders, isLoading }: Props) {
 
               <AccordionContent className="pb-4">
                 <div className="space-y-2 pt-2 border-t border-dashed border-gray-100">
-                  {order.items.map((item) => (
-                    <div
-                      key={item._id}
-                      className="flex justify-between items-center py-2 border-b border-dashed border-gray-100 last:border-0"
-                    >
-                      <div>
-                        <p className="font-bold text-[11px] text-gray-900 uppercase">
-                          {item.product.name}
-                        </p>
-                        <p className="text-[10px] text-gray-400">
-                          {item.price.toLocaleString()} $ x {item.quantity} ta
-                        </p>
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className="font-black text-primary border-primary/30"
+                  {(activeTab === "returned" && order.status !== "returned"
+                    ? order.items.filter((i) => i.status === "returned")
+                    : order.items
+                  ).map((item) => {
+                    const isItemReturned = item.status === "returned";
+                    return (
+                      <div
+                        key={item._id}
+                        className={`flex justify-between items-center py-2 border-b border-dashed border-gray-100 last:border-0 ${isItemReturned ? "opacity-60" : ""}`}
                       >
-                        {item.totalAmount.toLocaleString()} $
-                      </Badge>
-                    </div>
-                  ))}
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className={`font-bold text-[11px] uppercase ${isItemReturned ? "text-orange-500 line-through" : "text-gray-900"}`}>
+                              {item.product.sku || item.product.name}
+                            </p>
+                            {isItemReturned && (
+                              <Badge variant="outline" className="text-[8px] px-1.5 py-0 h-4 font-black text-orange-500 border-orange-300 bg-orange-50">
+                                ↩ Qaytarilgan
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-gray-400">
+                            {item.price.toLocaleString()} $ x {item.quantity} ta
+                          </p>
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className={`font-black ${isItemReturned ? "text-orange-500 border-orange-300 line-through" : "text-primary border-primary/30"}`}
+                        >
+                          {item.totalAmount.toLocaleString()} $
+                        </Badge>
+                      </div>
+                    );
+                  })}
 
                   {order.discountPercent > 0 && (
                     <div className="space-y-1 py-1 border-b border-dashed border-gray-100">

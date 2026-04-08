@@ -93,6 +93,7 @@ export interface SellerOrderItem {
   price: number;
   costPrice: number;
   totalAmount: number;
+  status?: string;
 }
 
 export interface SellerOrder {

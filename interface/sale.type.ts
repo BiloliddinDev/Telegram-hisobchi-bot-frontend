@@ -39,12 +39,13 @@ export interface OrderItem {
   product: {
     _id: string;
     name: string;
+    sku?: string;
     price: number;
-    image: string;
   };
   quantity: number;
   price: number;
   totalAmount: number;
+  status?: string;
 }
 
 export interface GroupedOrder {

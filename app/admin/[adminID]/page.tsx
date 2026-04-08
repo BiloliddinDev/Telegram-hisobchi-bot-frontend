@@ -136,12 +136,13 @@ export default function AdminSellerDetailPage() {
         product: {
           _id: "",
           name: item.product.name,
+          sku: item.product.sku,
           price: item.price,
-          image: "",
         },
         quantity: item.quantity,
         price: item.price,
         totalAmount: item.totalAmount,
+        status: item.status,
       })),
       totalAmount: o.totalAmount,
       debt: o.debt,
@@ -153,7 +154,8 @@ export default function AdminSellerDetailPage() {
   );
 
   const filteredStocks = stocks.filter((s) =>
-    s.product.name.toLowerCase().includes(search.toLowerCase()),
+    (s.product.sku?.toLowerCase().includes(search.toLowerCase()) ||
+    s.product.name.toLowerCase().includes(search.toLowerCase())),
   );
 
   const openEditDrawer = (stock: ProductStockItem) => {
@@ -343,9 +345,6 @@ export default function AdminSellerDetailPage() {
                 <TableHeader className="bg-slate-50/80">
                   <TableRow>
                     <TableHead className="text-[10px] font-black uppercase py-4 px-6">
-                      Mahsulot nomi
-                    </TableHead>
-                    <TableHead className="text-[10px] font-black uppercase py-4 px-6">
                       SKU
                     </TableHead>
                     <TableHead className="text-[10px] font-black uppercase py-4 px-6 text-center">
@@ -366,11 +365,8 @@ export default function AdminSellerDetailPage() {
                       >
                         <TableCell className="px-6 py-4">
                           <p className="text-xs font-black uppercase text-slate-800">
-                            {stock?.product?.name}
+                            {stock?.product?.sku || stock?.product?.name}
                           </p>
-                        </TableCell>
-                        <TableCell className="px-6 py-4 uppercase text-[10px] font-bold text-slate-500">
-                          {stock.product?.sku}
                         </TableCell>
                         <TableCell className="px-6 py-4 text-center">
                           <span className="text-xs font-black text-primary bg-primary/10 px-2 py-1 rounded-sm">
@@ -435,10 +431,7 @@ export default function AdminSellerDetailPage() {
                     >
                       <TableCell className="px-6 py-4">
                         <p className="text-xs font-black uppercase text-slate-800">
-                          {stock.product.name}
-                        </p>
-                        <p className="text-[9px] font-bold text-slate-400 uppercase">
-                          {stock.product.sku}
+                          {stock.product.sku || stock.product.name}
                         </p>
                       </TableCell>
                       <TableCell className="px-6 py-4 text-center">
@@ -464,7 +457,7 @@ export default function AdminSellerDetailPage() {
                             <AlertDialogHeader>
                               <AlertDialogTitle className="uppercase font-black text-sm tracking-widest">{`Ishonchingiz komilmi?`}</AlertDialogTitle>
                               <AlertDialogDescription className="text-xs font-bold text-slate-500 uppercase">
-                                {`${stock.product.name} mahsuloti sellerdan butunlay o'chiriladi va ${stock.stock.quantity} ta qoldiq asosiy omborga qaytariladi.`}
+                                {`${stock.product.sku || stock.product.name} mahsuloti sellerdan butunlay o'chiriladi va ${stock.stock.quantity} ta qoldiq asosiy omborga qaytariladi.`}
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
