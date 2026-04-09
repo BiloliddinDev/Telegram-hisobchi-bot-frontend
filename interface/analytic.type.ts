@@ -16,6 +16,46 @@ export interface SellerDebt {
   }[];
 }
 
+export interface KassaData {
+  balance: number;
+  totalIn: number;
+  totalOut: number;
+}
+
+export interface CashTransaction {
+  _id: string;
+  type: "in" | "out";
+  amount: number;
+  description: string;
+  performedBy: {
+    _id: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+  };
+  relatedSale?: string;
+  createdAt: string;
+}
+
+export interface CashBalanceResponse {
+  balance: number;
+  totalIn: number;
+  totalOut: number;
+  countIn: number;
+  countOut: number;
+}
+
+export interface CashTransactionsResponse {
+  transactions: CashTransaction[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  };
+}
+
 export interface ReportData {
   period: {
     startDate: string;
@@ -50,4 +90,5 @@ export interface ReportData {
     totalDebtors: number;
     sellerDebts: SellerDebt[];
   };
+  kassa: KassaData;
 }

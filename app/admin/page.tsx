@@ -18,6 +18,7 @@ import AdminHeader from "@/components/admin/AdminHeader";
 import TabsProducts from "@/components/admin/TabsProducts";
 import AdminSellers from "@/components/admin/AdminSellers";
 import AdminReports from "@/components/admin/AdminReports";
+import AdminCash from "@/components/admin/AdminCash";
 import { ImportTransferDialog } from "@/components/admin/ImportTransferDialog";
 
 export default function AdminPage() {
@@ -51,6 +52,7 @@ export default function AdminPage() {
           <TabsProducts />
           <AdminSellers />
           <AdminReports />
+          <AdminCash />
 
           <TabsContent value="assign" className="mt-4 space-y-8">
             <Card>
