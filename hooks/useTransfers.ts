@@ -23,7 +23,7 @@ export const useCreateTransfer = () => {
       queryClient.invalidateQueries({ queryKey: ["transfers"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["sellers"] });
-      queryClient.invalidateQueries({ queryKey: ["analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
     },
   });
 };
@@ -38,7 +38,7 @@ export const useUpdateTransfer = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transfers"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      queryClient.invalidateQueries({ queryKey: ["analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
     },
   });
 };
@@ -53,7 +53,7 @@ export const useReturnTransfer = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transfers"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      queryClient.invalidateQueries({ queryKey: ["analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
     },
   });
 };
@@ -73,7 +73,7 @@ export const useImportTransfers = () => {
       queryClient.invalidateQueries({ queryKey: ["transfers"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["sellerStocks"] });
-      queryClient.invalidateQueries({ queryKey: ["analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
     },
   });
 };

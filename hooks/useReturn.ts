@@ -14,7 +14,6 @@ export const useReturn = () => {
       queryClient.invalidateQueries({ queryKey: ["seller-stocks"] });
       queryClient.invalidateQueries({ queryKey: ["seller-customers"] });
       queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
-      queryClient.invalidateQueries({ queryKey: ["analytics"] });
     },
   });
 };

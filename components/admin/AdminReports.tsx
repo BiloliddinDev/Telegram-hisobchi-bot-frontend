@@ -75,6 +75,7 @@ export default function AdminReports() {
   const sellerStocks = reports?.summary.sellerStocks;
   const sales = reports?.summary.sales;
   const debts = reports?.debts;
+  const kassa = reports?.kassa;
 
   const profit = sales?.totalProfit || 0;
   const totalPaid = sales?.totalPaid || 0;
@@ -90,6 +91,7 @@ export default function AdminReports() {
     },
     { name: "Jami Savdo", value: totalRevenue },
     { name: "Naqd Tushum", value: totalPaid },
+    { name: "Kassa", value: kassa?.balance || 0 },
     { name: "Jami Qarz", value: debts?.grandTotalDebt || 0 },
   ];
 
@@ -213,6 +215,17 @@ export default function AdminReports() {
               <p className="text-xl font-bold text-white">
                 {sales?.totalSalesQuantity?.toLocaleString()} dona
               </p>
+            </div>
+            <div className="h-10 w-[1px] bg-slate-800 hidden md:block" />
+            {/* Kassa Balansi */}
+            <div>
+              <p className="text-[10px] font-bold uppercase text-blue-400 mb-1">
+                Kassa Balansi
+              </p>
+              <p className="text-xl font-bold text-blue-400">
+                {(kassa?.balance || 0).toLocaleString()} $
+              </p>
+              <p className="text-[10px] text-slate-600">Kassadagi pul</p>
             </div>
             <div className="h-10 w-[1px] bg-slate-800 hidden md:block" />
             {/* Qarz */}
@@ -396,7 +409,9 @@ export default function AdminReports() {
                         ? "#ef4444"
                         : entry.name === "Naqd Tushum"
                           ? "#10b981"
-                          : "#0f172a"
+                          : entry.name === "Kassa"
+                            ? "#3b82f6"
+                            : "#0f172a"
                     }
                     fillOpacity={0.9}
                   />
