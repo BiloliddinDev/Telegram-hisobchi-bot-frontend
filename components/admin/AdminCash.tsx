@@ -5,7 +5,9 @@ import {
     useCashBalance,
     useCashTransactions,
     useCashWithdraw,
+    useCashSpend,
     useDeleteCashTransaction,
+    useSellers,
 } from "@/hooks/useAdminData";
 import {useToast} from "@/hooks/useToast";
 import {
@@ -51,6 +53,11 @@ export default function AdminCash() {
     const [withdrawAmount, setWithdrawAmount] = useState("");
     const [withdrawDescription, setWithdrawDescription] = useState("");
 
+    const [spendAmount, setSpendAmount] = useState("");
+    const [spendType, setSpendType] = useState<"rashot" | "oylik">("rashot");
+    const [spendDescription, setSpendDescription] = useState("");
+    const [spendSellerId, setSpendSellerId] = useState("");
+
     const start = formatDateAPI(startDate);
     const end = formatDateAPI(endDate);
 
@@ -61,7 +68,9 @@ export default function AdminCash() {
     const {data: transactionsData, isLoading: txLoading} =
         useCashTransactions(start, end, filterType, page);
     const {mutate: withdraw, isPending: isWithdrawing} = useCashWithdraw();
+    const {mutate: spend, isPending: isSpending} = useCashSpend();
     const {mutate: deleteTransaction} = useDeleteCashTransaction();
+    const {data: sellers} = useSellers();
 
     const handleWithdraw = () => {
         const amount = Number(withdrawAmount);
@@ -81,6 +90,41 @@ export default function AdminCash() {
                     showToast("Kassadan pul muvaffaqiyatli olindi", "success");
                     setWithdrawAmount("");
                     setWithdrawDescription("");
+                },
+                onError: (error: Error) => {
+                    showToast(error.message || "Xatolik yuz berdi", "error");
+                },
+            },
+        );
+    };
+
+    const handleSpend = () => {
+        const amount = Number(spendAmount);
+        if (!amount || amount <= 0) {
+            showToast("Summa 0 dan katta bo'lishi kerak", "error");
+            return;
+        }
+        if (spendType === "oylik" && !spendSellerId) {
+            showToast("Oylik uchun sotuvchini tanlash majburiy", "error");
+            return;
+        }
+
+        spend(
+            {
+                amount,
+                type: spendType,
+                description: spendDescription.trim() || undefined,
+                sellerId: spendType === "oylik" ? spendSellerId : undefined,
+            },
+            {
+                onSuccess: () => {
+                    showToast(
+                        spendType === "oylik" ? "Oylik muvaffaqiyatli berildi" : "Rashot qayd etildi",
+                        "success",
+                    );
+                    setSpendAmount("");
+                    setSpendDescription("");
+                    setSpendSellerId("");
                 },
                 onError: (error: Error) => {
                     showToast(error.message || "Xatolik yuz berdi", "error");
@@ -150,11 +194,21 @@ export default function AdminCash() {
                                 {balance?.countOut || 0} ta operatsiya
                             </p>
                         </div>
+                        <Separator orientation="vertical" className="hidden md:block h-12"/>
+                        <div>
+                            <p className="text-sm text-muted-foreground">Admin Hamyon</p>
+                            <p className={`text-xl font-semibold ${(balance?.adminPocket || 0) >= 0 ? "text-amber-500" : "text-destructive"}`}>
+                                {(balance?.adminPocket || 0).toLocaleString()} $
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                                Qo&apos;ldagi pul
+                            </p>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Pul olish */}
                 <Card>
                     <CardHeader>
@@ -193,6 +247,84 @@ export default function AdminCash() {
                                     className="h-4 w-4 animate-spin border-2 border-current border-t-transparent rounded-full"/>
                             ) : (
                                 "Pul olish"
+                            )}
+                        </Button>
+                    </CardContent>
+                </Card>
+
+                {/* Chiqim (Rashot / Oylik) */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Chiqim</CardTitle>
+                        <CardDescription>
+                            Admin hamyonidan rashot yoki oylik
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex gap-2">
+                            <Button
+                                variant={spendType === "rashot" ? "default" : "outline"}
+                                size="sm"
+                                className="flex-1"
+                                onClick={() => setSpendType("rashot")}
+                            >
+                                Chiqim
+                            </Button>
+                            <Button
+                                variant={spendType === "oylik" ? "default" : "outline"}
+                                size="sm"
+                                className="flex-1"
+                                onClick={() => setSpendType("oylik")}
+                            >
+                                Oylik
+                            </Button>
+                        </div>
+                        {spendType === "oylik" && (
+                            <div className="space-y-2">
+                                <Label>Sotuvchi</Label>
+                                <select
+                                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                    value={spendSellerId}
+                                    onChange={(e) => setSpendSellerId(e.target.value)}
+                                >
+                                    <option value="">Sotuvchini tanlang</option>
+                                    {sellers?.map((s) => (
+                                        <option key={s._id} value={s._id}>
+                                            {s.firstName} {s.lastName}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+                        <div className="space-y-2">
+                            <Label>Summa ($)</Label>
+                            <Input
+                                type="number"
+                                placeholder="Masalan: 50"
+                                value={spendAmount}
+                                onChange={(e) => setSpendAmount(e.target.value)}
+                                min="0"
+                                step="0.01"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Izoh (ixtiyoriy)</Label>
+                            <Input
+                                placeholder="Masalan: Aprel oylik"
+                                value={spendDescription}
+                                onChange={(e) => setSpendDescription(e.target.value)}
+                            />
+                        </div>
+                        <Button
+                            onClick={handleSpend}
+                            disabled={isSpending}
+                            className="w-full"
+                            variant="secondary"
+                        >
+                            {isSpending ? (
+                                <div className="h-4 w-4 animate-spin border-2 border-current border-t-transparent rounded-full"/>
+                            ) : (
+                                spendType === "oylik" ? "Oylik berish" : "Chiqim qayd etish"
                             )}
                         </Button>
                     </CardContent>
@@ -241,37 +373,26 @@ export default function AdminCash() {
                             </Popover>
                         </div>
                         <Separator/>
-                        <div className="flex gap-2">
-                            <Button
-                                variant={filterType === "" ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => {
-                                    setFilterType("");
-                                    setPage(1);
-                                }}
-                            >
-                                Hammasi
-                            </Button>
-                            <Button
-                                variant={filterType === "in" ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => {
-                                    setFilterType("in");
-                                    setPage(1);
-                                }}
-                            >
-                                Kirim
-                            </Button>
-                            <Button
-                                variant={filterType === "out" ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => {
-                                    setFilterType("out");
-                                    setPage(1);
-                                }}
-                            >
-                                Chiqim
-                            </Button>
+                        <div className="flex flex-wrap gap-2">
+                            {[
+                                {label: "Hammasi", value: ""},
+                                {label: "Kirim", value: "in"},
+                                {label: "Chiqim", value: "out"},
+                                {label: "chiqim", value: "rashot"},
+                                {label: "Oylik", value: "oylik"},
+                            ].map(({label, value}) => (
+                                <Button
+                                    key={value}
+                                    variant={filterType === value ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => {
+                                        setFilterType(value);
+                                        setPage(1);
+                                    }}
+                                >
+                                    {label}
+                                </Button>
+                            ))}
                         </div>
                     </CardContent>
                 </Card>
@@ -305,13 +426,26 @@ export default function AdminCash() {
                                         {tx.type === "in" ? (
                                             <ArrowDownCircle className="h-5 w-5 text-green-600"/>
                                         ) : (
-                                            <ArrowUpCircle className="h-5 w-5 text-destructive"/>
+                                            <ArrowUpCircle className={`h-5 w-5 ${tx.type === "out" ? "text-destructive" : "text-amber-500"}`}/>
                                         )}
                                         <div>
-                                            <p className="text-sm font-medium">
-                                                {tx.description ||
-                                                    (tx.type === "in" ? "Kirim" : "Chiqim")}
-                                            </p>
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-sm font-medium">
+                                                    {tx.description || (
+                                                        tx.type === "in" ? "Kirim" :
+                                                        tx.type === "out" ? "Chiqim" :
+                                                        tx.type === "rashot" ? "Rashot" : "Oylik"
+                                                    )}
+                                                </p>
+                                                {tx.type === "rashot" && (
+                                                    <Badge variant="outline" className="text-yellow-600 border-yellow-400 text-[10px] px-1 py-0">Rashot</Badge>
+                                                )}
+                                                {tx.type === "oylik" && (
+                                                    <Badge variant="outline" className="text-blue-600 border-blue-400 text-[10px] px-1 py-0">
+                                                        Oylik{tx.relatedSeller ? ` · ${tx.relatedSeller.firstName} ${tx.relatedSeller.lastName}` : ""}
+                                                    </Badge>
+                                                )}
+                                            </div>
                                             <p className="text-xs text-muted-foreground">
                                                 {tx.performedBy?.firstName} {tx.performedBy?.lastName}{" "}
                                                 &middot;{" "}
@@ -323,14 +457,13 @@ export default function AdminCash() {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Badge
-                                            variant={
-                                                tx.type === "in" ? "secondary" : "destructive"
-                                            }
+                                            variant={tx.type === "in" ? "secondary" : "destructive"}
+                                            className={tx.type === "rashot" || tx.type === "oylik" ? "bg-amber-100 text-amber-800 border-amber-300" : ""}
                                         >
                                             {tx.type === "in" ? "+" : "-"}
                                             {tx.amount.toLocaleString()} $
                                         </Badge>
-                                        {tx.type === "out" && (
+                                        {(tx.type === "out" || tx.type === "rashot" || tx.type === "oylik") && (
                                             <Button
                                                 variant="ghost"
                                                 size="icon"

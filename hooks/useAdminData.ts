@@ -147,6 +147,25 @@ export const useCashWithdraw = () => {
   });
 };
 
+export const useCashSpend = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: {
+      amount: number;
+      type: "rashot" | "oylik";
+      description?: string;
+      sellerId?: string;
+    }) => {
+      const { data } = await api.post("/admin/cash/spend", body);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cash-balance"] });
+      queryClient.invalidateQueries({ queryKey: ["cash-transactions"] });
+    },
+  });
+};
+
 export const useDeleteCashTransaction = () => {
   const queryClient = useQueryClient();
   return useMutation({

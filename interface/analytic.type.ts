@@ -24,7 +24,7 @@ export interface KassaData {
 
 export interface CashTransaction {
   _id: string;
-  type: "in" | "out";
+  type: "in" | "out" | "rashot" | "oylik";
   amount: number;
   description: string;
   performedBy: {
@@ -34,6 +34,12 @@ export interface CashTransaction {
     lastName: string;
     role: string;
   };
+  relatedSeller?: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    username: string;
+  };
   relatedSale?: string;
   createdAt: string;
 }
@@ -42,6 +48,7 @@ export interface CashBalanceResponse {
   balance: number;
   totalIn: number;
   totalOut: number;
+  adminPocket: number;
   countIn: number;
   countOut: number;
 }
