@@ -81,7 +81,7 @@ export default function AdminReports() {
   const totalPaid = sales?.totalPaid || 0;
   const totalRevenue = sales?.totalRevenue || 0;
   const margin =
-    totalRevenue > 0 ? ((profit / totalPaid) * 100).toFixed(1) : "0";
+    totalRevenue > 0 ? ((profit / totalRevenue) * 100).toFixed(1) : "0";
 
   const chartData = [
     { name: "Asosiy Ombor", value: products?.totalProductCostPrice || 0 },
@@ -179,7 +179,7 @@ export default function AdminReports() {
               <span className="text-2xl text-slate-500">$</span>
             </h2>
             <p className="text-[10px] text-slate-500 mt-2">
-              {` Faqat to'langan puldan hisoblangan`}
+              {`Jami sotuv - tan narx (qarz ham hisobga olinadi)`}
             </p>
           </div>
 
