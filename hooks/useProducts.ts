@@ -78,6 +78,40 @@ export const useImportWarehouseQuantity = () => {
   });
 };
 
+export const useCheckDuplicates = () => {
+  return useMutation({
+    mutationFn: async (formData: FormData) => {
+      const { data } = await api.post("/products/costs/check-duplicates", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return data as {
+        duplicates: {
+          sku: string;
+          rows: number[];
+          excelCostPrice: number | null;
+          excelSellerPrice: number | null;
+          warehouseQuantity: number | null;
+        }[];
+      };
+    },
+  });
+};
+
+export const useUpdateCostPrices = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (formData: FormData) => {
+      const { data } = await api.post("/products/costs/update", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+};
+
 export const useUpdateProduct = () => {
   const queryClient = useQueryClient();
   return useMutation({
