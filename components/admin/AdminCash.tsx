@@ -15,11 +15,13 @@ import {
     ArrowUpCircle,
     Trash2,
     Calendar as CalendarIcon,
+    AlertTriangle,
 } from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {Badge} from "@/components/ui/badge";
+import {Alert, AlertDescription} from "@/components/ui/alert";
 import {Separator} from "@/components/ui/separator";
 import {TabsContent} from "@/components/ui/tabs";
 import {
@@ -208,6 +210,16 @@ export default function AdminCash() {
                 </CardContent>
             </Card>
 
+            {balance && balance.adminPocket < 0 && (
+                <Alert variant="destructive" className="border-destructive/50">
+                    <AlertTriangle className="h-4 w-4"/>
+                    <AlertDescription>
+                        Admin hamyoni manfiy: <strong>{balance.adminPocket.toLocaleString()} $</strong>.
+                        Rashot yoki oylik chiqimlari kassadan olingan puldan oshib ketdi.
+                    </AlertDescription>
+                </Alert>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Pul olish */}
                 <Card>
@@ -378,7 +390,7 @@ export default function AdminCash() {
                                 {label: "Hammasi", value: ""},
                                 {label: "Kirim", value: "in"},
                                 {label: "Chiqim", value: "out"},
-                                {label: "chiqim", value: "rashot"},
+                                {label: "Rashot", value: "rashot"},
                                 {label: "Oylik", value: "oylik"},
                             ].map(({label, value}) => (
                                 <Button
