@@ -24,7 +24,7 @@ export interface KassaData {
 
 export interface CashTransaction {
   _id: string;
-  type: "in" | "out" | "rashot" | "oylik";
+  type: "in" | "out" | "rashot" | "oylik" | "chiqim";
   amount: number;
   description: string;
   performedBy: {
@@ -49,6 +49,10 @@ export interface CashBalanceResponse {
   totalIn: number;
   totalOut: number;
   adminPocket: number;
+  totalRashot: number;
+  totalOylik: number;
+  totalChiqim: number;
+  totalSpent: number;
   countIn: number;
   countOut: number;
 }

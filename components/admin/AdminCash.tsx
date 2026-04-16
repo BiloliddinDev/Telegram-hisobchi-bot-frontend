@@ -56,7 +56,7 @@ export default function AdminCash() {
     const [withdrawDescription, setWithdrawDescription] = useState("");
 
     const [spendAmount, setSpendAmount] = useState("");
-    const [spendType, setSpendType] = useState<"rashot" | "oylik">("rashot");
+    const [spendType, setSpendType] = useState<"rashot" | "oylik" | "chiqim">("rashot");
     const [spendDescription, setSpendDescription] = useState("");
     const [spendSellerId, setSpendSellerId] = useState("");
 
@@ -121,7 +121,7 @@ export default function AdminCash() {
             {
                 onSuccess: () => {
                     showToast(
-                        spendType === "oylik" ? "Oylik muvaffaqiyatli berildi" : "Rashot qayd etildi",
+                        spendType === "oylik" ? "Oylik muvaffaqiyatli berildi" : spendType === "chiqim" ? "Dokon xarajati qayd etildi" : "Xarajat qayd etildi",
                         "success",
                     );
                     setSpendAmount("");
@@ -168,7 +168,7 @@ export default function AdminCash() {
                         {format(startDate, "dd.MM.yyyy")} — {format(endDate, "dd.MM.yyyy")}
                     </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className={"flex items-start gap-16"}>
                     <div className="flex flex-col md:flex-row md:items-end gap-6">
                         <div>
                             <p className="text-sm text-muted-foreground">Balans</p>
@@ -188,23 +188,28 @@ export default function AdminCash() {
                         </div>
                         <Separator orientation="vertical" className="hidden md:block h-12"/>
                         <div>
-                            <p className="text-sm text-muted-foreground">Chiqim</p>
+                            <p className="text-sm text-muted-foreground">Kassadan olingan pul</p>
                             <p className="text-xl font-semibold">
-                                -{(balance?.totalOut || 0).toLocaleString()} $
+                                {(balance?.totalOut || 0).toLocaleString()} $
                             </p>
                             <p className="text-xs text-muted-foreground">
-                                {balance?.countOut || 0} ta operatsiya
+                                {balance?.countOut || 0} ta marta
                             </p>
                         </div>
-                        <Separator orientation="vertical" className="hidden md:block h-12"/>
-                        <div>
-                            <p className="text-sm text-muted-foreground">Admin Hamyon</p>
-                            <p className={`text-xl font-semibold ${(balance?.adminPocket || 0) >= 0 ? "text-amber-500" : "text-destructive"}`}>
+
+                    </div>
+                    <div className={"flex gap-10"}>
+                        <div className="">
+                            <p className="text-sm text-muted-foreground mb-1">Admin Hamyon</p>
+                            <p className={`text-4xl font-bold tracking-tight ${(balance?.adminPocket || 0) >= 0 ? "text-amber-500" : "text-destructive"}`}>
                                 {(balance?.adminPocket || 0).toLocaleString()} $
                             </p>
-                            <p className="text-xs text-muted-foreground">
-                                Qo&apos;ldagi pul
-                            </p>
+                        </div>
+                        <Separator orientation={"vertical"} className="hidden md:block h-12"/>
+                        <div className="text-sm text-muted-foreground flex flex-col gap-1">
+                            <p className="block"><span className={"font-bold text-black"}>Oylik:</span> {(balance?.totalOylik || 0).toLocaleString()} $</p>
+                            <p className="block"> <span className={"font-bold text-black"}>Xarajat :</span>  {(balance?.totalRashot || 0).toLocaleString()} $</p>
+                            <p className="block"> <span className={"font-bold text-black"}>Dokon :</span> {(balance?.totalChiqim || 0).toLocaleString()} $</p>
                         </div>
                     </div>
                 </CardContent>
@@ -267,9 +272,9 @@ export default function AdminCash() {
                 {/* Chiqim (Rashot / Oylik) */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Chiqim</CardTitle>
+                        <CardTitle>Admin Hamyon Xarajati</CardTitle>
                         <CardDescription>
-                            Admin hamyonidan rashot yoki oylik
+                            Admin hamyonidan xarajat qayd etish
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -280,7 +285,15 @@ export default function AdminCash() {
                                 className="flex-1"
                                 onClick={() => setSpendType("rashot")}
                             >
-                                Chiqim
+                                Xarajat
+                            </Button>
+                            <Button
+                                variant={spendType === "chiqim" ? "default" : "outline"}
+                                size="sm"
+                                className="flex-1"
+                                onClick={() => setSpendType("chiqim")}
+                            >
+                                Dokon
                             </Button>
                             <Button
                                 variant={spendType === "oylik" ? "default" : "outline"}
@@ -334,9 +347,10 @@ export default function AdminCash() {
                             variant="secondary"
                         >
                             {isSpending ? (
-                                <div className="h-4 w-4 animate-spin border-2 border-current border-t-transparent rounded-full"/>
+                                <div
+                                    className="h-4 w-4 animate-spin border-2 border-current border-t-transparent rounded-full"/>
                             ) : (
-                                spendType === "oylik" ? "Oylik berish" : "Chiqim qayd etish"
+                                spendType === "oylik" ? "Oylik berish" : spendType === "chiqim" ? "Dokon xarajati" : "Xarajat qayd etish"
                             )}
                         </Button>
                     </CardContent>
@@ -389,8 +403,9 @@ export default function AdminCash() {
                             {[
                                 {label: "Hammasi", value: ""},
                                 {label: "Kirim", value: "in"},
-                                {label: "Chiqim", value: "out"},
-                                {label: "Rashot", value: "rashot"},
+                                {label: "Kassadan olish", value: "out"},
+                                {label: "Xarajat", value: "rashot"},
+                                {label: "Dokon", value: "chiqim"},
                                 {label: "Oylik", value: "oylik"},
                             ].map(({label, value}) => (
                                 <Button
@@ -438,22 +453,30 @@ export default function AdminCash() {
                                         {tx.type === "in" ? (
                                             <ArrowDownCircle className="h-5 w-5 text-green-600"/>
                                         ) : (
-                                            <ArrowUpCircle className={`h-5 w-5 ${tx.type === "out" ? "text-destructive" : "text-amber-500"}`}/>
+                                            <ArrowUpCircle
+                                                className={`h-5 w-5 ${tx.type === "out" ? "text-destructive" : tx.type === "chiqim" ? "text-orange-500" : "text-amber-500"}`}/>
                                         )}
                                         <div>
                                             <div className="flex items-center gap-2">
                                                 <p className="text-sm font-medium">
                                                     {tx.description || (
                                                         tx.type === "in" ? "Kirim" :
-                                                        tx.type === "out" ? "Chiqim" :
-                                                        tx.type === "rashot" ? "Rashot" : "Oylik"
+                                                            tx.type === "out" ? "Kassadan olingan pul" :
+                                                                tx.type === "rashot" ? "Xarajat (Oz uchun)" :
+                                                                    tx.type === "chiqim" ? "Xarajat (Dokon uchun)" : "Oylik"
                                                     )}
                                                 </p>
                                                 {tx.type === "rashot" && (
-                                                    <Badge variant="outline" className="text-yellow-600 border-yellow-400 text-[10px] px-1 py-0">Rashot</Badge>
+                                                    <Badge variant="outline"
+                                                           className="text-yellow-600 border-yellow-400 text-[10px] px-1 py-0">Xarajat</Badge>
+                                                )}
+                                                {tx.type === "chiqim" && (
+                                                    <Badge variant="outline"
+                                                           className="text-orange-600 border-orange-400 text-[10px] px-1 py-0">Dokon</Badge>
                                                 )}
                                                 {tx.type === "oylik" && (
-                                                    <Badge variant="outline" className="text-blue-600 border-blue-400 text-[10px] px-1 py-0">
+                                                    <Badge variant="outline"
+                                                           className="text-blue-600 border-blue-400 text-[10px] px-1 py-0">
                                                         Oylik{tx.relatedSeller ? ` · ${tx.relatedSeller.firstName} ${tx.relatedSeller.lastName}` : ""}
                                                     </Badge>
                                                 )}
@@ -470,12 +493,12 @@ export default function AdminCash() {
                                     <div className="flex items-center gap-2">
                                         <Badge
                                             variant={tx.type === "in" ? "secondary" : "destructive"}
-                                            className={tx.type === "rashot" || tx.type === "oylik" ? "bg-amber-100 text-amber-800 border-amber-300" : ""}
+                                            className={["rashot", "oylik", "chiqim"].includes(tx.type) ? "bg-amber-100 text-amber-800 border-amber-300" : ""}
                                         >
                                             {tx.type === "in" ? "+" : "-"}
                                             {tx.amount.toLocaleString()} $
                                         </Badge>
-                                        {(tx.type === "out" || tx.type === "rashot" || tx.type === "oylik") && (
+                                        {tx.type !== "in" && (
                                             <Button
                                                 variant="ghost"
                                                 size="icon"

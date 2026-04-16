@@ -36,7 +36,7 @@ export function AssignProductDialog({ product }: { product: Product }) {
     assignProduct(
       {
         productId: product._id,
-        sellerId: data.sellerId,
+      sellerId: data.sellerId,
         quantity: data.quantity,
       },
       {

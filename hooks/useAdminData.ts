@@ -152,7 +152,7 @@ export const useCashSpend = () => {
   return useMutation({
     mutationFn: async (body: {
       amount: number;
-      type: "rashot" | "oylik";
+      type: "rashot" | "oylik" | "chiqim";
       description?: string;
       sellerId?: string;
     }) => {
