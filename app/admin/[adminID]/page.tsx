@@ -946,12 +946,3 @@ export default function AdminSellerDetailPage() {
     </div>
   );
 }
-   </Button>
-              </DrawerClose>
-            </DrawerFooter>
-          </div>
-        </DrawerContent>
-      </Drawer>
-    </div>
-  );
-}
