@@ -24,7 +24,7 @@ export default function CustomersList() {
 
   if (!customers?.length) {
     return (
-      <div className="bg-white border border-gray-200 rounded-sm p-10 text-center text-gray-400 text-xs font-bold uppercase">
+      <div className="bg-white border border-gray-200 rounded-sm p-4 sm:p-10 text-center text-gray-400 text-xs font-bold uppercase">
         ✅ {`Qarzdor mijozlar yo'q`}
       </div>
     );

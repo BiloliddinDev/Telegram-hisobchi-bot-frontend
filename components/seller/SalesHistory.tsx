@@ -52,7 +52,7 @@ export default function SalesHistory({ orders, isLoading }: Props) {
   return (
     <div className="space-y-4">
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white border border-gray-200 p-5 rounded-sm shadow-sm flex items-center justify-between">
           <div>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -120,7 +120,7 @@ export default function SalesHistory({ orders, isLoading }: Props) {
         <TabsList>
           <TabsTrigger
             value="sold"
-            className="gap-4 text-[16px] px-10  font-bold"
+            className="gap-2 sm:gap-4 text-[13px] sm:text-[16px] px-4 sm:px-10 font-bold"
           >
             SOTILGAN
             <Badge
@@ -132,7 +132,7 @@ export default function SalesHistory({ orders, isLoading }: Props) {
           </TabsTrigger>
           <TabsTrigger
             value="returned"
-            className="gap-4 text-[16px] px-10  font-bold"
+            className="gap-2 sm:gap-4 text-[13px] sm:text-[16px] px-4 sm:px-10 font-bold"
           >
             QAYTARILGAN
             <Badge
@@ -147,7 +147,7 @@ export default function SalesHistory({ orders, isLoading }: Props) {
 
       {/* Orders list */}
       {list.length === 0 ? (
-        <div className="bg-white border border-gray-200 rounded-sm p-10 text-center text-gray-400 text-xs font-bold uppercase">
+        <div className="bg-white border border-gray-200 rounded-sm p-4 sm:p-10 text-center text-gray-400 text-xs font-bold uppercase">
           {activeTab === "sold"
             ? "Sotuvlar topilmadi"
             : "Qaytarilgan buyurtmalar yo'q"}
@@ -184,7 +184,12 @@ export default function SalesHistory({ orders, isLoading }: Props) {
 
                   <div className="text-right space-y-1">
                     <p className="font-black text-primary text-lg">
-                      {order.totalAmount.toLocaleString()} $
+                      {activeTab === "returned" 
+                        ? order.items
+                            .filter(i => i.status === "returned")
+                            .reduce((sum, i) => sum + i.totalAmount, 0)
+                            .toLocaleString()
+                        : order.totalAmount.toLocaleString()} $
                     </p>
                     {order.status === "returned" ? (
                       <span className="text-[10px] font-black text-orange-500 block">
@@ -250,60 +255,77 @@ export default function SalesHistory({ orders, isLoading }: Props) {
                     );
                   })}
 
-                  {order.discountPercent > 0 && (
-                    <div className="space-y-1 py-1 border-b border-dashed border-gray-100">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-black text-gray-400 uppercase">
-                          Chegirmasiz:
+                  {activeTab === "returned" ? (
+                    <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                      <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">
+                        Qaytarilgan jami:
+                      </span>
+                      <span className="text-xl font-black text-orange-500">
+                        {order.items
+                          .filter((i) => i.status === "returned")
+                          .reduce((sum, i) => sum + i.totalAmount, 0)
+                          .toLocaleString()}{" "}
+                        $
+                      </span>
+                    </div>
+                  ) : (
+                    <>
+                      {order.discountPercent > 0 && (
+                        <div className="space-y-1 py-1 border-b border-dashed border-gray-100">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] font-black text-gray-400 uppercase">
+                              Chegirmasiz:
+                            </span>
+                            <span className="text-[11px] font-black text-gray-400 line-through">
+                              {order.rawTotal.toLocaleString()} $
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] font-black text-gray-400 uppercase">
+                              Chegirma:
+                            </span>
+                            <span className="text-[11px] font-black text-green-600">
+                              -{order.discountPercent}% (-
+                              {(
+                                (Math.round(order.rawTotal * 100) -
+                                  Math.round(order.totalAmount * 100)) /
+                                100
+                              ).toFixed(2)}{" "}
+                              $)
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                          Jami:
                         </span>
-                        <span className="text-[11px] font-black text-gray-400 line-through">
-                          {order.rawTotal.toLocaleString()} $
+                        <span className="text-xl font-black text-primary">
+                          {order.totalAmount.toLocaleString()} $
                         </span>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-black text-gray-400 uppercase">
-                          Chegirma:
-                        </span>
-                        <span className="text-[11px] font-black text-green-600">
-                          -{order.discountPercent}% (-
-                          {(
-                            (Math.round(order.rawTotal * 100) -
-                              Math.round(order.totalAmount * 100)) /
-                            100
-                          ).toFixed(2)}{" "}
-                          $)
-                        </span>
-                      </div>
-                    </div>
-                  )}
 
-                  <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                      Jami:
-                    </span>
-                    <span className="text-xl font-black text-primary">
-                      {order.totalAmount.toLocaleString()} $
-                    </span>
-                  </div>
+                      {order.paidAmount > 0 && order.debt > 0 && (
+                        <div className="flex justify-between items-center bg-green-50 px-3 py-2">
+                          <span className="text-[10px] font-black text-green-600 uppercase">{`✅ To'langan:`}</span>
+                          <span className="font-black text-green-600">
+                            {order.paidAmount.toLocaleString()} $
+                          </span>
+                        </div>
+                      )}
 
-                  {order.paidAmount > 0 && order.debt > 0 && (
-                    <div className="flex justify-between items-center bg-green-50 px-3 py-2">
-                      <span className="text-[10px] font-black text-green-600 uppercase">{`✅ To'langan:`}</span>
-                      <span className="font-black text-green-600">
-                        {order.paidAmount.toLocaleString()} $
-                      </span>
-                    </div>
-                  )}
-
-                  {order.debt > 0 && (
-                    <div className="flex justify-between items-center bg-red-50 px-3 py-2">
-                      <span className="text-[10px] font-black text-red-500 uppercase">
-                        🔴 Qarz:
-                      </span>
-                      <span className="font-black text-red-500">
-                        {order.debt.toLocaleString()} $
-                      </span>
-                    </div>
+                      {order.debt > 0 && (
+                        <div className="flex justify-between items-center bg-red-50 px-3 py-2">
+                          <span className="text-[10px] font-black text-red-500 uppercase">
+                            🔴 Qarz:
+                          </span>
+                          <span className="font-black text-red-500">
+                            {order.debt.toLocaleString()} $
+                          </span>
+                        </div>
+                      )}
+                    </>
                   )}
 
                   {order.notes && (

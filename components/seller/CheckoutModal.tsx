@@ -159,9 +159,9 @@ export default function CheckoutModal({
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
             {` To'lanishi kerak bo'lgan summa`}
           </span>
-          <div className="text-4xl font-black text-slate-900">
+          <div className="text-3xl sm:text-4xl font-black text-slate-900">
             {netTotal.toLocaleString()}{" "}
-            <span className="text-xl font-normal text-slate-500">$</span>
+            <span className="text-lg sm:text-xl font-normal text-slate-500">$</span>
           </div>
           {discountAmount > 0 && (
             <div className="flex items-center justify-center gap-2 text-xs font-bold text-green-600">
@@ -261,7 +261,7 @@ export default function CheckoutModal({
           </div>
 
           {/* To'langan va Qarz */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-slate-500 uppercase">
                 {` To'langan`}
