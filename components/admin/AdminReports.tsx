@@ -174,9 +174,9 @@ export default function AdminReports() {
             <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-400 mb-2">
               Umumiy Sof Foyda
             </p>
-            <h2 className="text-5xl font-black tracking-tighter">
+            <h2 className="text-3xl sm:text-5xl font-black tracking-tighter">
               {profit.toLocaleString()}{" "}
-              <span className="text-2xl text-slate-500">$</span>
+              <span className="text-xl sm:text-2xl text-slate-500">$</span>
             </h2>
             <p className="text-[10px] text-slate-500 mt-2">
               {`Jami sotuv - tan narx (qarz ham hisobga olinadi)`}
@@ -556,7 +556,7 @@ function ReportsSkeleton() {
     <div className="mt-6 space-y-6 animate-pulse">
       <div className="h-20 bg-slate-50 rounded-xl" />
       <div className="h-48 bg-slate-50 rounded-xl" />
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {[1, 2, 3, 4, 5].map((i) => (
           <div key={i} className="h-44 bg-slate-50 rounded-xl" />
         ))}

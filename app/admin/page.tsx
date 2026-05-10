@@ -35,12 +35,12 @@ export default function AdminPage() {
   }, [user, router]);
 
   return (
-    <div className="min-h-screen bg-background p-4 mt-20">
+    <div className="min-h-screen bg-background p-3 sm:p-4 mt-16 sm:mt-20">
       <ToastComponent />
       <div className="max-w-7xl mx-auto">
-        <div className="mb-6 flex justify-between items-end">
+        <div className="mb-4 sm:mb-6 flex justify-between items-end">
           <div>
-            <h1 className="text-3xl font-bold">Admin Panel</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">Admin Panel</h1>
             <p className="text-muted-foreground">
               Salom, {user?.firstName || user?.username || "Admin"}!
             </p>

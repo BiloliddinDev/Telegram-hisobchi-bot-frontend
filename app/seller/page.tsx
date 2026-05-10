@@ -169,7 +169,7 @@ export default function SellerPage() {
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] pb-20 mt-20">
-      <header className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-20 shadow-sm flex justify-between items-center">
+      <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 sticky top-0 z-20 shadow-sm flex justify-between items-center gap-2">
         <div>
           <h1 className="text-xl font-bold flex items-center gap-2 text-gray-900">
             <ShoppingBag className="text-primary w-6 h-6" /> Sotuv Paneli
@@ -197,7 +197,7 @@ export default function SellerPage() {
           className="space-y-6"
         >
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-1">
-            <TabsList className="justify-start border-none rounded-none bg-transparent h-auto p-0 gap-8">
+            <TabsList className="justify-start border-none rounded-none bg-transparent h-auto p-0 gap-3 sm:gap-8 flex-wrap">
               <TabsTrigger
                 value="products"
                 className="data-[state=active]:border-primary data-[state=active]:text-primary border-b-2 border-transparent rounded-none px-2 py-3 bg-transparent shadow-none font-bold text-sm transition-all uppercase"
@@ -347,7 +347,7 @@ export default function SellerPage() {
                     {/* 1. Mahsulotlar ro'yxati */}
                     <div className="max-h-[400px] overflow-y-auto divide-y">
                       {Object.values(cart).length === 0 ? (
-                        <div className="p-10 text-center text-gray-400 text-xs font-medium">
+                        <div className="p-6 sm:p-10 text-center text-gray-400 text-xs font-medium">
                           {` Savat bo'sh`}
                         </div>
                       ) : (

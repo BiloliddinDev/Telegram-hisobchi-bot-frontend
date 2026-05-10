@@ -445,7 +445,7 @@ export function StockTransferModule() {
               <ChevronLeft className="mr-2 h-4 w-4" /> Orqaga
             </Button>
             <Button
-              className="h-11 px-10 rounded-sm font-black  uppercase tracking-widest shadow-lg shadow-primary/20"
+              className="h-11 px-4 sm:px-10 rounded-sm font-black uppercase tracking-widest shadow-lg shadow-primary/20"
               onClick={handleConfirm}
               
               disabled={isPending}

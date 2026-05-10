@@ -247,7 +247,7 @@ export default function AdminSellerDetailPage() {
   }
 
   return (
-    <div className="flex container flex-col gap-6 p-6 bg-background min-h-screen mt-20">
+    <div className="flex container flex-col gap-6 p-3 sm:p-6 bg-background min-h-screen mt-16 sm:mt-20">
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -268,7 +268,7 @@ export default function AdminSellerDetailPage() {
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Badge
             variant="outline"
             className="bg-white px-3 py-1.5 border-slate-200 text-slate-600 shadow-sm font-bold"
@@ -492,13 +492,13 @@ export default function AdminSellerDetailPage() {
         <TabsContent value="history" className="mt-0 outline-none">
           <div className="space-y-4">
             {/* Sana filtri */}
-            <div className="flex items-center justify-end gap-2">
+            <div className="flex items-center justify-end gap-2 flex-wrap">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-[200px] justify-start text-left font-bold text-[11px] uppercase rounded-sm border-slate-200 shadow-sm",
+                      "w-full sm:w-[200px] justify-start text-left font-bold text-[11px] uppercase rounded-sm border-slate-200 shadow-sm",
                       !startDate && "text-muted-foreground",
                     )}
                   >
@@ -534,7 +534,7 @@ export default function AdminSellerDetailPage() {
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-[200px] justify-start text-left font-bold text-[11px] uppercase rounded-sm border-slate-200 shadow-sm",
+                      "w-full sm:w-[200px] justify-start text-left font-bold text-[11px] uppercase rounded-sm border-slate-200 shadow-sm",
                       !endDate && "text-muted-foreground",
                     )}
                   >
@@ -581,7 +581,7 @@ export default function AdminSellerDetailPage() {
             </div>
 
             {/* 3 ta stat karta */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-white border border-gray-200 p-5 rounded-sm shadow-sm flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
@@ -716,28 +716,47 @@ export default function AdminSellerDetailPage() {
 
                         <AccordionContent className="pb-4">
                           <div className="space-y-2 pt-3 border-t border-dashed border-slate-100">
-                            {order.items.map((item, idx) => (
-                              <div
-                                key={idx}
-                                className="flex justify-between items-center py-2 border-b border-dashed border-gray-100 last:border-0"
-                              >
-                                <div>
-                                  <p className="font-bold text-[11px] text-gray-900 uppercase">
-                                    {item.product?.name}
-                                  </p>
-                                  <p className="text-[10px] text-gray-400">
-                                    {item.price?.toLocaleString()} $ ×{" "}
-                                    {item.quantity} ta
-                                  </p>
-                                </div>
-                                <Badge
-                                  variant="outline"
-                                  className="font-black text-primary border-primary/30"
+                            {order.items.map((item, idx) => {
+                              const isItemReturned = item.status === "returned";
+                              return (
+                                <div
+                                  key={idx}
+                                  className={cn(
+                                    "flex justify-between items-center py-2 border-b border-dashed border-gray-100 last:border-0",
+                                    isItemReturned && "opacity-60"
+                                  )}
                                 >
-                                  {item.totalAmount?.toLocaleString()} $
-                                </Badge>
-                              </div>
-                            ))}
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <p className={cn(
+                                        "font-bold text-[11px] uppercase",
+                                        isItemReturned ? "text-orange-500 line-through" : "text-gray-900"
+                                      )}>
+                                        {item.product?.name}
+                                      </p>
+                                      {isItemReturned && (
+                                        <Badge variant="outline" className="text-[8px] px-1.5 py-0 h-4 font-black text-orange-500 border-orange-300 bg-orange-50">
+                                          ↩ Qaytarilgan
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <p className="text-[10px] text-gray-400">
+                                      {item.price?.toLocaleString()} $ ×{" "}
+                                      {item.quantity} ta
+                                    </p>
+                                  </div>
+                                  <Badge
+                                    variant="outline"
+                                    className={cn(
+                                      "font-black",
+                                      isItemReturned ? "text-orange-500 border-orange-300 line-through" : "text-primary border-primary/30"
+                                    )}
+                                  >
+                                    {item.totalAmount?.toLocaleString()} $
+                                  </Badge>
+                                </div>
+                              );
+                            })}
 
                             {order.discountPercent > 0 && (
                               <div className="flex justify-between text-[10px] py-1 border-t border-dashed border-gray-100">
@@ -752,31 +771,41 @@ export default function AdminSellerDetailPage() {
 
                             <div className="flex justify-between items-center pt-2 border-t border-gray-100">
                               <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                Jami:
+                                {order.status === "returned" ? "Qaytarilgan jami:" : "Jami:"}
                               </span>
-                              <span className="text-xl font-black text-primary">
-                                {order.totalAmount?.toLocaleString()} $
+                              <span className={cn("text-xl font-black", order.status === "returned" ? "text-orange-500" : "text-primary")}>
+                                {order.status === "returned"
+                                  ? order.items
+                                      .filter((i) => i.status === "returned")
+                                      .reduce((sum, i) => sum + (i.totalAmount || 0), 0)
+                                      .toLocaleString()
+                                  : order.totalAmount?.toLocaleString()}{" "}
+                                $
                               </span>
                             </div>
 
-                            {order.paidAmount > 0 && order.debt > 0 && (
-                              <div className="flex justify-between items-center bg-green-50 px-3 py-2">
-                                <span className="text-[10px] font-black text-green-600 uppercase">{`✅ To'langan:`}</span>
-                                <span className="font-black text-green-600">
-                                  {order.paidAmount?.toLocaleString()} $
-                                </span>
-                              </div>
-                            )}
+                            {order.status !== "returned" && (
+                              <>
+                                {order.paidAmount > 0 && order.debt > 0 && (
+                                  <div className="flex justify-between items-center bg-green-50 px-3 py-2">
+                                    <span className="text-[10px] font-black text-green-600 uppercase">{`✅ To'langan:`}</span>
+                                    <span className="font-black text-green-600">
+                                      {order.paidAmount?.toLocaleString()} $
+                                    </span>
+                                  </div>
+                                )}
 
-                            {order.debt > 0 && (
-                              <div className="flex justify-between items-center bg-red-50 px-3 py-2">
-                                <span className="text-[10px] font-black text-red-500 uppercase">
-                                  🔴 Qarz:
-                                </span>
-                                <span className="font-black text-red-500">
-                                  {order.debt?.toLocaleString()} $
-                                </span>
-                              </div>
+                                {order.debt > 0 && (
+                                  <div className="flex justify-between items-center bg-red-50 px-3 py-2">
+                                    <span className="text-[10px] font-black text-red-500 uppercase">
+                                      🔴 Qarz:
+                                    </span>
+                                    <span className="font-black text-red-500">
+                                      {order.debt?.toLocaleString()} $
+                                    </span>
+                                  </div>
+                                )}
+                              </>
                             )}
 
                             {order.notes && (
@@ -909,6 +938,15 @@ export default function AdminSellerDetailPage() {
                 >
                   Bekor qilish
                 </Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </div>
+        </DrawerContent>
+      </Drawer>
+    </div>
+  );
+}
+   </Button>
               </DrawerClose>
             </DrawerFooter>
           </div>

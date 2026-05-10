@@ -148,7 +148,7 @@ export default function AdminCash() {
             <TabsContent value="cash" className="mt-4 space-y-4">
                 <div className="space-y-4 animate-pulse">
                     <div className="h-32 bg-muted rounded-lg"/>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="h-48 bg-muted rounded-lg"/>
                         <div className="h-48 bg-muted rounded-lg"/>
                     </div>
@@ -168,12 +168,12 @@ export default function AdminCash() {
                         {format(startDate, "dd.MM.yyyy")} — {format(endDate, "dd.MM.yyyy")}
                     </CardDescription>
                 </CardHeader>
-                <CardContent className={"flex items-start gap-16"}>
+                <CardContent className={"flex flex-col lg:flex-row items-start gap-6 lg:gap-16"}>
                     <div className="flex flex-col md:flex-row md:items-end gap-6">
                         <div>
                             <p className="text-sm text-muted-foreground">Balans</p>
-                            <p className="text-4xl font-bold tracking-tight">
-                                {(balance?.balance || 0).toLocaleString()} $
+                            <p className={`text-2xl sm:text-4xl font-bold tracking-tight ${(balance?.balance ?? 0) < 0 ? "text-destructive" : ""}`}>
+                                {(balance?.balance ?? 0).toLocaleString()} $
                             </p>
                         </div>
                         <Separator orientation="vertical" className="hidden md:block h-12"/>
@@ -198,10 +198,10 @@ export default function AdminCash() {
                         </div>
 
                     </div>
-                    <div className={"flex gap-10"}>
+                    <div className={"flex flex-col sm:flex-row gap-4 sm:gap-10"}>
                         <div className="">
                             <p className="text-sm text-muted-foreground mb-1">Admin Hamyon</p>
-                            <p className={`text-4xl font-bold tracking-tight ${(balance?.adminPocket || 0) >= 0 ? "text-amber-500" : "text-destructive"}`}>
+                            <p className={`text-2xl sm:text-4xl font-bold tracking-tight ${(balance?.adminPocket || 0) >= 0 ? "text-amber-500" : "text-destructive"}`}>
                                 {(balance?.adminPocket || 0).toLocaleString()} $
                             </p>
                         </div>

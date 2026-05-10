@@ -109,7 +109,7 @@ export default function TabsProducts() {
                       setPage(1);
                     }}
                   >
-                    <SelectTrigger className="w-[220px] rounded-sm border-gray-200 h-10 bg-white">
+                    <SelectTrigger className="w-full sm:w-[220px] rounded-sm border-gray-200 h-10 bg-white">
                       <Filter className="w-3.5 h-3.5 mr-2 text-gray-400" />
                       <SelectValue placeholder="Kategoriya: Barchasi" />
                     </SelectTrigger>
